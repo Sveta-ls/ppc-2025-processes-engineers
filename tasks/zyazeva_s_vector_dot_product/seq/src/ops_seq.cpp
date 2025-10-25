@@ -3,8 +3,8 @@
 #include <numeric>
 #include <vector>
 
-#include "zyazeva_s_vector_dot_product/common/include/common.hpp"
 #include "util/include/util.hpp"
+#include "zyazeva_s_vector_dot_product/common/include/common.hpp"
 
 namespace zyazeva_s_vector_dot_product {
 
