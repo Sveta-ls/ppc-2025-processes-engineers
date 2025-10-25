@@ -8,7 +8,7 @@
 namespace zyazeva_s_vector_dot_product {
 
 class ZyazevaSElemVecDotProdPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  const int kCount_ = 100;
+  const int kCount_ = 101;
   InType input_data_{};
 
   void SetUp() override {
