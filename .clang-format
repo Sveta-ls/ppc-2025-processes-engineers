@@ -14,9 +14,9 @@ ReferenceAlignment: Right
 SortUsingDeclarations: LexicographicNumeric
 InsertNewlineAtEOF: true
 LambdaBodyIndentation: OuterScope
-MaxEmptyLinesToKeep: 1
 KeepEmptyLines:
   AtStartOfFile: false
   AtStartOfBlock: false
   AtEndOfFile: false
+MaxEmptyLinesToKeep: 1
 LineEnding: LF

@@ -15,14 +15,14 @@ ZyazevaSVecDotProductSEQ::ZyazevaSVecDotProductSEQ(const InType &in) {
 }
 
 bool ZyazevaSVecDotProductSEQ::ValidationImpl() {
-  auto& input = GetInput();
+  auto &input = GetInput();
   if (input.size() != 2) {
     return false;
   }
   if (input[0].size() != input[1].size()) {
     return false;
   }
-  return !input[0].empty(); 
+  return !input[0].empty();
 }
 
 bool ZyazevaSVecDotProductSEQ::PreProcessingImpl() {
@@ -31,16 +31,16 @@ bool ZyazevaSVecDotProductSEQ::PreProcessingImpl() {
 }
 
 bool ZyazevaSVecDotProductSEQ::RunImpl() {
-  auto& input = GetInput();
-  auto& vec1 = input[0];
-  auto& vec2 = input[1];
-  
+  auto &input = GetInput();
+  auto &vec1 = input[0];
+  auto &vec2 = input[1];
+
   int dot_product = 0;
-  
+
   for (size_t i = 0; i < vec1.size(); i++) {
     dot_product += vec1[i] * vec2[i];
   }
-  
+
   GetOutput() = dot_product;
   return true;
 }
@@ -49,4 +49,4 @@ bool ZyazevaSVecDotProductSEQ::PostProcessingImpl() {
   return true;
 }
 
-} 
+}  // namespace zyazeva_s_vector_dot_product
