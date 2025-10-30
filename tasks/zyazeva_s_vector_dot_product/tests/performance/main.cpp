@@ -10,7 +10,6 @@
 
 namespace zyazeva_s_vector_dot_product {
 
-// Простой перфоманс тест для SEQ версии с МАЛЕНЬКИМИ векторами
 TEST(PerformanceTest, SequentialSmallVectors) {
   // Используем МАЛЕНЬКИЕ векторы чтобы избежать переполнения
   std::vector<int> vec1(5000), vec2(5000);
