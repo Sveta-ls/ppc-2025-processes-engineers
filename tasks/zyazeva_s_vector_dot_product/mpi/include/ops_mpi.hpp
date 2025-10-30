@@ -2,21 +2,34 @@
 
 #include "task/include/task.hpp"
 #include "zyazeva_s_vector_dot_product/common/include/common.hpp"
+#include <mpi.h>
+#include <vector>
 
 namespace zyazeva_s_vector_dot_product {
 
-class ZyazevaSVecDotProduct : public BaseTask {
+class ZyazevaSVecDotProduct : public ppc::task::Task<std::vector<std::vector<int>>, int> {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;
   }
-  explicit ZyazevaSVecDotProduct(const InType &in);
-
+  
+  explicit ZyazevaSVecDotProduct(std::vector<std::vector<int>> input) 
+      : ppc::task::Task<std::vector<std::vector<int>>, int>() {
+    GetInput() = std::move(input);
+  }
+  
  private:
   bool ValidationImpl() override;
   bool PreProcessingImpl() override;
   bool RunImpl() override;
   bool PostProcessingImpl() override;
+  
+  std::vector<int> local_input1_, local_input2_;
+  std::vector<int> counts_;
+  int local_size_;
+  long long result{};
+  int world_size{};
+  int world_rank{};
 };
 
 }  // namespace zyazeva_s_vector_dot_product

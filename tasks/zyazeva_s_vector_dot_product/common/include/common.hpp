@@ -2,14 +2,15 @@
 
 #include <string>
 #include <tuple>
+#include <vector>
 
 #include "task/include/task.hpp"
 
 namespace zyazeva_s_vector_dot_product {
 
-using InType = int;
-using OutType = int;
-using TestType = std::tuple<int, std::string>;
+using InType = std::vector<std::vector<int>>;  // Два вектора для скалярного произведения
+using OutType = long long;
+using TestType = std::tuple<long long, std::string>;
 using BaseTask = ppc::task::Task<InType, OutType>;
 
 }  // namespace zyazeva_s_vector_dot_product

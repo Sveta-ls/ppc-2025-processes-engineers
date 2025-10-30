@@ -15,46 +15,38 @@ ZyazevaSVecDotProductSEQ::ZyazevaSVecDotProductSEQ(const InType &in) {
 }
 
 bool ZyazevaSVecDotProductSEQ::ValidationImpl() {
-  return (GetInput() > 0) && (GetOutput() == 0);
+  auto& input = GetInput();
+  if (input.size() != 2) {
+    return false;
+  }
+  if (input[0].size() != input[1].size()) {
+    return false;
+  }
+  return !input[0].empty(); 
 }
 
 bool ZyazevaSVecDotProductSEQ::PreProcessingImpl() {
-  GetOutput() = 2 * GetInput();
-  return GetOutput() > 0;
+  GetOutput() = 0;
+  return true;
 }
 
 bool ZyazevaSVecDotProductSEQ::RunImpl() {
-  if (GetInput() == 0) {
-    return false;
+  auto& input = GetInput();
+  auto& vec1 = input[0];
+  auto& vec2 = input[1];
+  
+  int dot_product = 0;
+  
+  for (size_t i = 0; i < vec1.size(); i++) {
+    dot_product += vec1[i] * vec2[i];
   }
-
-  for (InType i = 0; i < GetInput(); i++) {
-    for (InType j = 0; j < GetInput(); j++) {
-      for (InType k = 0; k < GetInput(); k++) {
-        std::vector<InType> tmp(i + j + k, 1);
-        GetOutput() += std::accumulate(tmp.begin(), tmp.end(), 0);
-        GetOutput() -= i + j + k;
-      }
-    }
-  }
-
-  const int num_threads = ppc::util::GetNumThreads();
-  GetOutput() *= num_threads;
-
-  int counter = 0;
-  for (int i = 0; i < num_threads; i++) {
-    counter++;
-  }
-
-  if (counter != 0) {
-    GetOutput() /= counter;
-  }
-  return GetOutput() > 0;
+  
+  GetOutput() = dot_product;
+  return true;
 }
 
 bool ZyazevaSVecDotProductSEQ::PostProcessingImpl() {
-  GetOutput() -= GetInput();
-  return GetOutput() > 0;
+  return true;
 }
 
-}  // namespace zyazeva_s_vector_dot_product
+} 

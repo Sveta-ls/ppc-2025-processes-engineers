@@ -17,6 +17,8 @@ class ZyazevaSVecDotProductSEQ : public BaseTask {
   bool PreProcessingImpl() override;
   bool RunImpl() override;
   bool PostProcessingImpl() override;
+  std::vector<std::vector<int>> input_;
+  long long res{};
 };
 
 }  // namespace zyazeva_s_vector_dot_product
