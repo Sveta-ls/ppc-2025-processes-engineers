@@ -10,7 +10,7 @@
 
 namespace zyazeva_s_vector_dot_product {
 
-class ZyazevaSVecDotProdTests : public testing::TestWithParam<TestType> {
+class ZyazevaSVecDotFuncTests : public testing::TestWithParam<TestType> {
  protected:
   void SetUp() override {
     auto [test_case, name] = GetParam();
@@ -62,7 +62,7 @@ class ZyazevaSVecDotProdTests : public testing::TestWithParam<TestType> {
 };
 
 // SEQ тесты
-TEST_P(ZyazevaSVecDotProdTests, SequentialTest) {
+TEST_P(ZyazevaSVecDotFuncTests, SequentialTest) {
   auto task = std::make_shared<ZyazevaSVecDotProductSEQ>(input_data_);
 
   EXPECT_TRUE(task->Validation());
@@ -74,7 +74,7 @@ TEST_P(ZyazevaSVecDotProdTests, SequentialTest) {
 }
 
 // MPI тесты
-TEST_P(ZyazevaSVecDotProdTests, MPITest) {
+TEST_P(ZyazevaSVecDotFuncTests, MPITest) {
   int world_rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
@@ -96,7 +96,7 @@ TEST_P(ZyazevaSVecDotProdTests, MPITest) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(VectorTests, ZyazevaSVecDotProdTests,
+INSTANTIATE_TEST_SUITE_P(VectorTests,ZyazevaSVecDotFuncTests,
                          testing::Values(std::make_tuple(1, "large_sequential"), std::make_tuple(2, "large_pattern"),
                                          std::make_tuple(3, "large_arithmetic")),
                          [](const testing::TestParamInfo<TestType> &info) { return std::get<1>(info.param); });
