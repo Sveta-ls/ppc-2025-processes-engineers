@@ -96,7 +96,7 @@ TEST_P(ZyazevaSVecDotFuncTests, MPITest) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(VectorTests,ZyazevaSVecDotFuncTests,
+INSTANTIATE_TEST_SUITE_P(VectorTests, ZyazevaSVecDotFuncTests,
                          testing::Values(std::make_tuple(1, "large_sequential"), std::make_tuple(2, "large_pattern"),
                                          std::make_tuple(3, "large_arithmetic")),
                          [](const testing::TestParamInfo<TestType> &info) { return std::get<1>(info.param); });
