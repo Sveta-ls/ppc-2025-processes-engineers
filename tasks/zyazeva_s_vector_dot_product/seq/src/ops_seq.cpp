@@ -10,7 +10,8 @@ namespace zyazeva_s_vector_dot_product {
 
 ZyazevaSVecDotProductSEQ::ZyazevaSVecDotProductSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
-  GetInput() = in;
+  InType temp = in;
+  GetInput() = std::move(temp);
   GetOutput() = 0;
 }
 
