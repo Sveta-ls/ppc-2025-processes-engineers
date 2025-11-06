@@ -1,8 +1,10 @@
 #include "zyazeva_s_vector_dot_product/mpi/include/ops_mpi.hpp"
+
 #include <mpi.h>
-#include <vector>
+
 #include <algorithm>
 #include <iostream>
+#include <vector>
 
 namespace zyazeva_s_vector_dot_product {
 
@@ -22,19 +24,19 @@ bool ZyazevaSVecDotProduct::PreProcessingImpl() {
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
   auto& input = GetInput();
-  
+
   if (world_rank == 0) {
     int total_elements = static_cast<int>(input[0].size());
     counts_.resize(world_size);
-    
+
     int delta = total_elements / world_size;
     int remainder = total_elements % world_size;
-    
+
     for (int i = 0; i < world_size; ++i) {
       counts_[i] = delta + (i < remainder ? 1 : 0);
     }
   }
-  
+
   int my_count;
   if (world_rank == 0) {
     my_count = counts_[0];
@@ -44,25 +46,25 @@ bool ZyazevaSVecDotProduct::PreProcessingImpl() {
   } else {
     MPI_Recv(&my_count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   }
-  
+
   local_size_ = my_count;
-  
+
   result = 0;
   return true;
 }
 
 bool ZyazevaSVecDotProduct::RunImpl() {
   auto& input = GetInput();
-  
+
   local_input1_.resize(local_size_);
   local_input2_.resize(local_size_);
-  
+
   if (world_rank == 0) {
     std::copy(input[0].begin(), input[0].begin() + local_size_, local_input1_.begin());
     std::copy(input[1].begin(), input[1].begin() + local_size_, local_input2_.begin());
-    
+
     int offset = local_size_;
-    
+
     for (int proc = 1; proc < world_size; proc++) {
       int proc_count = counts_[proc];
       MPI_Send(input[0].data() + offset, proc_count, MPI_INT, proc, 0, MPI_COMM_WORLD);
@@ -82,7 +84,7 @@ bool ZyazevaSVecDotProduct::RunImpl() {
 
   if (world_rank == 0) {
     result = local_result;
-   
+
     for (int proc = 1; proc < world_size; proc++) {
       int proc_result;
       MPI_Recv(&proc_result, 1, MPI_INT, proc, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -91,7 +93,7 @@ bool ZyazevaSVecDotProduct::RunImpl() {
   } else {
     MPI_Send(&local_result, 1, MPI_INT, 0, 2, MPI_COMM_WORLD);
   }
-  
+
   return true;
 }
 
@@ -99,7 +101,7 @@ bool ZyazevaSVecDotProduct::PostProcessingImpl() {
   if (world_rank == 0) {
     GetOutput() = result;
   } else {
-    GetOutput() = 0; 
+    GetOutput() = 0;
   }
   return true;
 }
