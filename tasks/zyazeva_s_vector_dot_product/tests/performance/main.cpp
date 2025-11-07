@@ -45,10 +45,10 @@ TEST(PerformanceTest, MPISmallVectors) {
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
   // Используем МАЛЕНЬКИЕ векторы чтобы избежать переполнения
-  std::vector<int> vec1(5000), vec2(5000);
+  std::vector<int> vec1(50000), vec2(50000);
   if (world_rank == 0) {
     std::iota(vec1.begin(), vec1.end(), 1);     // 1, 2, 3, ..., 1000
-    std::iota(vec2.begin(), vec2.end(), 5001);  // 1001, 1002, ..., 2000
+    std::iota(vec2.begin(), vec2.end(), 50001);  // 1001, 1002, ..., 2000
   }
 
   InType input_data = {vec1, vec2};
@@ -77,7 +77,7 @@ TEST(PerformanceTest, MPISmallVectors) {
 
 // Тест с РЕАЛЬНО маленькими размерами векторов
 TEST(PerformanceTest, DifferentSmallSizes) {
-  std::vector<int> sizes = {100, 500, 1000};  // МАЛЕНЬКИЕ размеры
+  std::vector<int> sizes = {10000, 10002, 10001};  // МАЛЕНЬКИЕ размеры
 
   for (int size : sizes) {
     std::vector<int> vec1(size), vec2(size);
