@@ -48,7 +48,6 @@ bool ZyazevaSVecDotProduct::RunImpl() {
   MPI_Scatterv(input[1].data(), counts_.data(), displs_.data(), MPI_INT, local_input2_.data(), local_size_, MPI_INT, 0,
                MPI_COMM_WORLD);
 
-  // Локальное вычисление
   int local_result = 0;
   for (int i = 0; i < local_size_; i++) {
     local_result += local_input1_[i] * local_input2_[i];
