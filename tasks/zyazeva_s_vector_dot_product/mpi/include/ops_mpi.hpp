@@ -19,14 +19,6 @@ class ZyazevaSVecDotProduct : public ppc::task::Task<std::vector<std::vector<int
       : ppc::task::Task<std::vector<std::vector<int>>, int>() {
     GetInput() = std::move(input);
   }
-  ~ZyazevaSVecDotProduct() {
-    // Безопасное завершение MPI операций
-    try {
-      MPI_Barrier(MPI_COMM_WORLD);  // Синхронизация перед разрушением
-    } catch (...) {
-      // Игнорируем исключения в деструкторе
-    }
-  }
 
  private:
   bool ValidationImpl() override;

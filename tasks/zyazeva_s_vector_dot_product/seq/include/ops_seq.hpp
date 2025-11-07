@@ -11,13 +11,6 @@ class ZyazevaSVecDotProductSEQ : public BaseTask {
     return ppc::task::TypeOfTask::kSEQ;
   }
   explicit ZyazevaSVecDotProductSEQ(const InType &in);
-  ~ZyazevaSVecDotProductSEQ() noexcept {
-    try {
-      // Любая очистка, если нужна
-    } catch (...) {
-      // Подавляем все исключения
-    }
-  }
 
  private:
   bool ValidationImpl() override;
