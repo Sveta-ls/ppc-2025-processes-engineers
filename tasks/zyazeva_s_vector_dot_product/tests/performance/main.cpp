@@ -47,7 +47,7 @@ TEST(PerformanceTest, MPISmallVectors) {
   // Используем МАЛЕНЬКИЕ векторы чтобы избежать переполнения
   std::vector<int> vec1(50000), vec2(50000);
   if (world_rank == 0) {
-    std::iota(vec1.begin(), vec1.end(), 1);     // 1, 2, 3, ..., 1000
+    std::iota(vec1.begin(), vec1.end(), 1);      // 1, 2, 3, ..., 1000
     std::iota(vec2.begin(), vec2.end(), 50001);  // 1001, 1002, ..., 2000
   }
 
