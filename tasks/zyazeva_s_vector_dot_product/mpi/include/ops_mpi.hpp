@@ -28,6 +28,7 @@ class ZyazevaSVecDotProduct : public ppc::task::Task<std::vector<std::vector<int
 
   std::vector<int> local_input1_, local_input2_;
   std::vector<int> counts_;
+  std::vector<int> displs_;
   int local_size_;
   long long result{};
   int world_size{};
