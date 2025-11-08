@@ -18,8 +18,8 @@ class ZyazevaSVecDotFuncTests : public testing::TestWithParam<TestType> {
     std::vector<int> vec1, vec2;
 
     if (test_case == 1) {
-      vec1.resize(10000);
-      vec2.resize(10000);
+      vec1.resize(100000);
+      vec2.resize(100000);
       std::iota(vec1.begin(), vec1.end(), 1);
       std::iota(vec2.begin(), vec2.end(), 10001);
     } else if (test_case == 2) {

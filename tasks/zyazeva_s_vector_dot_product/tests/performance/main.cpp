@@ -13,9 +13,11 @@ namespace zyazeva_s_vector_dot_product {
 
 TEST(PerformanceTest, SequentialSmallVectors) {
   // Используем МАЛЕНЬКИЕ векторы чтобы избежать переполнения
-  std::vector<int> vec1(5000), vec2(5000);
-  std::iota(vec1.begin(), vec1.end(), 1);     // 1, 2, 3, ..., 1000
-  std::iota(vec2.begin(), vec2.end(), 5001);  // 1001, 1002, ..., 2000
+  std::vector<int> vec1(50000), vec2(50000);
+  for (int i = 0; i < 50000; i++) {
+    vec1[i] = 1;
+    vec2[i] = 1;
+  }
 
   InType input_data = {vec1, vec2};
 
@@ -47,8 +49,10 @@ TEST(PerformanceTest, MPISmallVectors) {
   // Используем МАЛЕНЬКИЕ векторы чтобы избежать переполнения
   std::vector<int> vec1(50000), vec2(50000);
   if (world_rank == 0) {
-    std::iota(vec1.begin(), vec1.end(), 1);      // 1, 2, 3, ..., 1000
-    std::iota(vec2.begin(), vec2.end(), 50001);  // 1001, 1002, ..., 2000
+    for (int i = 0; i < 50000; i++) {
+      vec1[i] = 1;
+      vec2[i] = 1;
+    }
   }
 
   InType input_data = {vec1, vec2};
