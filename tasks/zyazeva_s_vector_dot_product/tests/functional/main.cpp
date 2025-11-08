@@ -59,7 +59,7 @@ TEST_P(ZyazevaSVecDotFuncTests, SequentialTest) {
   EXPECT_EQ(task.GetOutput(), expected_result_);
 }
 
-// MPI тесты - используем объект на стеке
+// MPI тесты - исполnьзуем объект на стеке
 TEST_P(ZyazevaSVecDotFuncTests, MPITest) {
   int world_rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
