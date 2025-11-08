@@ -13,8 +13,8 @@ namespace zyazeva_s_vector_dot_product {
 
 TEST(PerformanceTest, SequentialSmallVectors) {
   // Используем МАЛЕНЬКИЕ векторы чтобы избежать переполнения
-  std::vector<int> vec1(50000), vec2(50000);
-  for (int i = 0; i < 50000; i++) {
+  std::vector<int> vec1(1000000), vec2(1000000);
+  for (int i = 0; i < 1000000; i++) {
     vec1[i] = 1;
     vec2[i] = 1;
   }
@@ -47,9 +47,9 @@ TEST(PerformanceTest, MPISmallVectors) {
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
   // Используем МАЛЕНЬКИЕ векторы чтобы избежать переполнения
-  std::vector<int> vec1(50000), vec2(50000);
+  std::vector<int> vec1(1000000), vec2(1000000);
   if (world_rank == 0) {
-    for (int i = 0; i < 50000; i++) {
+    for (int i = 0; i < 1000000; i++) {
       vec1[i] = 1;
       vec2[i] = 1;
     }
