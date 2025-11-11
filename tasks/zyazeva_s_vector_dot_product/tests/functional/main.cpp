@@ -119,7 +119,7 @@ class ZyazevaRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, long l
 
 namespace {
 
-TEST_P(ZyazevaRunFuncTestsSEQ, DotProductTestSEQ) {  
+TEST_P(ZyazevaRunFuncTestsSEQ, DotProductTestSEQ) {
   ExecuteTest(GetParam());
 }
 
