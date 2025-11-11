@@ -14,7 +14,6 @@
 
 namespace zyazeva_s_vector_dot_product {
 
-// Базовый класс для SEQ тестов (без MPI)
 class ZyazevaRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, long long, TestType> {
  public:
   static auto PrintTestParam(const TestType &test_param) -> std::string {
@@ -63,7 +62,6 @@ class ZyazevaRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, long l
   long long expected_output_{};
 };
 
-// Класс для MPI тестов (с MPI)
 class ZyazevaRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, long long, TestType> {
  public:
   static auto PrintTestParam(const TestType &test_param) -> std::string {
@@ -121,24 +119,20 @@ class ZyazevaRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, long l
 
 namespace {
 
-// SEQ тесты
-TEST_P(ZyazevaRunFuncTestsSEQ, DotProductTestSEQ) {  // NOLINT
+TEST_P(ZyazevaRunFuncTestsSEQ, DotProductTestSEQ) {  
   ExecuteTest(GetParam());
 }
 
-// MPI тесты
-TEST_P(ZyazevaRunFuncTestsMPI, DotProductTestMPI) {  // NOLINT
+TEST_P(ZyazevaRunFuncTestsMPI, DotProductTestMPI) {
   ExecuteTest(GetParam());
 }
 
 const std::array<TestType, 5> kTestParam = {std::make_tuple(0, "simple_vectors"), std::make_tuple(1, "single_element"),
                                             std::make_tuple(2, "all_equal"), std::make_tuple(3, "large_values")};
 
-// SEQ задачи
 const auto kTestTasksListSEQ =
     ppc::util::AddFuncTask<ZyazevaSVecDotProductSEQ, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_vector_dot_product);
 
-// MPI задачи
 const auto kTestTasksListMPI =
     ppc::util::AddFuncTask<ZyazevaSVecDotProduct, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_vector_dot_product);
 
@@ -148,13 +142,9 @@ const auto kGtestValuesMPI = ppc::util::ExpandToValues(kTestTasksListMPI);
 const auto kPerfTestNameSEQ = ZyazevaRunFuncTestsSEQ::PrintFuncTestName<ZyazevaRunFuncTestsSEQ>;
 const auto kPerfTestNameMPI = ZyazevaRunFuncTestsMPI::PrintFuncTestName<ZyazevaRunFuncTestsMPI>;
 
-// SEQ тест suite
-INSTANTIATE_TEST_SUITE_P(  // NOLINT
-    VectorDotProductTestsSEQ, ZyazevaRunFuncTestsSEQ, kGtestValuesSEQ, kPerfTestNameSEQ);
+INSTANTIATE_TEST_SUITE_P(VectorDotProductTestsSEQ, ZyazevaRunFuncTestsSEQ, kGtestValuesSEQ, kPerfTestNameSEQ);
 
-// MPI тест suite
-INSTANTIATE_TEST_SUITE_P(  // NOLINT
-    VectorDotProductTestsMPI, ZyazevaRunFuncTestsMPI, kGtestValuesMPI, kPerfTestNameMPI);
+INSTANTIATE_TEST_SUITE_P(VectorDotProductTestsMPI, ZyazevaRunFuncTestsMPI, kGtestValuesMPI, kPerfTestNameMPI);
 
 }  // namespace
 

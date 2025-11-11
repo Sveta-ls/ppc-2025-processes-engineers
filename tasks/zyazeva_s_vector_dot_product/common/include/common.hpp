@@ -8,7 +8,7 @@
 
 namespace zyazeva_s_vector_dot_product {
 
-using InType = std::vector<std::vector<int>>;  // Два вектора для скалярного произведения
+using InType = std::vector<std::vector<int>>;  
 using OutType = long long;
 using TestType = std::tuple<long long, std::string>;
 using BaseTask = ppc::task::Task<InType, OutType>;

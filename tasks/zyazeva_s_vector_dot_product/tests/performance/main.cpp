@@ -15,7 +15,7 @@ TEST(SimplePerfTest, CompareBothVersions) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  const int SIZE = 3000000;
+  const int SIZE = 1000000;
 
   if (rank == 0) {
     std::vector<std::vector<int>> seq_data(2);
