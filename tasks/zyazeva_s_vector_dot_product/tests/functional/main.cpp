@@ -131,19 +131,15 @@ TEST_P(ZyazevaRunFuncTestsMPI, DotProductTestMPI) {  // NOLINT
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 5> kTestParam = {
-    std::make_tuple(0, "simple_vectors"),
-    std::make_tuple(1, "single_element"),
-    std::make_tuple(2, "all_equal"), 
-    std::make_tuple(3, "large_values")
-};
+const std::array<TestType, 5> kTestParam = {std::make_tuple(0, "simple_vectors"), std::make_tuple(1, "single_element"),
+                                            std::make_tuple(2, "all_equal"), std::make_tuple(3, "large_values")};
 
 // SEQ задачи
-const auto kTestTasksListSEQ = 
+const auto kTestTasksListSEQ =
     ppc::util::AddFuncTask<ZyazevaSVecDotProductSEQ, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_vector_dot_product);
 
 // MPI задачи
-const auto kTestTasksListMPI = 
+const auto kTestTasksListMPI =
     ppc::util::AddFuncTask<ZyazevaSVecDotProduct, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_vector_dot_product);
 
 const auto kGtestValuesSEQ = ppc::util::ExpandToValues(kTestTasksListSEQ);
@@ -156,7 +152,7 @@ const auto kPerfTestNameMPI = ZyazevaRunFuncTestsMPI::PrintFuncTestName<ZyazevaR
 INSTANTIATE_TEST_SUITE_P(  // NOLINT
     VectorDotProductTestsSEQ, ZyazevaRunFuncTestsSEQ, kGtestValuesSEQ, kPerfTestNameSEQ);
 
-// MPI тест suite  
+// MPI тест suite
 INSTANTIATE_TEST_SUITE_P(  // NOLINT
     VectorDotProductTestsMPI, ZyazevaRunFuncTestsMPI, kGtestValuesMPI, kPerfTestNameMPI);
 
