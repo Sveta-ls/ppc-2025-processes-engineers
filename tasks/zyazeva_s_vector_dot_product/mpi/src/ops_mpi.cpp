@@ -11,6 +11,7 @@
 namespace zyazeva_s_vector_dot_product {
 
 bool ZyazevaSVecDotProduct::ValidationImpl() {
+  SetTypeOfTask(GetStaticTypeOfTask());
   const auto &input = GetInput();
   return input.size() == 2 && input[0].size() == input[1].size();
 }
