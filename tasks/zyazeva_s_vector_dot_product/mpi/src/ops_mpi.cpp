@@ -3,68 +3,74 @@
 #include <mpi.h>
 
 #include <algorithm>
-#include <vector>
+#include <cstddef>
+#include <cstdint>
+
+#include "zyazeva_s_vector_dot_product/common/include/common.hpp"
 
 namespace zyazeva_s_vector_dot_product {
 
 bool ZyazevaSVecDotProduct::ValidationImpl() {
-  auto& input = GetInput();
+  const auto &input = GetInput();
   return input.size() == 2 && input[0].size() == input[1].size();
 }
 
 bool ZyazevaSVecDotProduct::PreProcessingImpl() {
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
-  auto& input = GetInput();
-  int total_elements = static_cast<int>(input[0].size());
-
-  // Вычисляем распределение данных
-  counts_.resize(world_size);
-  displs_.resize(world_size);
-
-  int base_size = total_elements / world_size;
-  int remainder = total_elements % world_size;
-
-  for (int i = 0; i < world_size; ++i) {
-    counts_[i] = base_size + (i < remainder ? 1 : 0);
-    displs_[i] = (i == 0) ? 0 : displs_[i - 1] + counts_[i - 1];
-  }
-
-  local_size_ = counts_[world_rank];
-  local_input1_.resize(local_size_);
-  local_input2_.resize(local_size_);
-
+  GetOutput() = 0;
   return true;
 }
 
 bool ZyazevaSVecDotProduct::RunImpl() {
-  auto& input = GetInput();
+  int rank = 0;
+  int size = 1;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  // Используем векторные операции вместо последовательных Send/Recv
-  MPI_Scatterv(input[0].data(), counts_.data(), displs_.data(), MPI_INT, local_input1_.data(), local_size_, MPI_INT, 0,
-               MPI_COMM_WORLD);
+  const auto &input = GetInput();
+  const auto &vector1 = input[0];
+  const auto &vector2 = input[1];
 
-  MPI_Scatterv(input[1].data(), counts_.data(), displs_.data(), MPI_INT, local_input2_.data(), local_size_, MPI_INT, 0,
-               MPI_COMM_WORLD);
+  int local_size =
+      (!vector1.empty() && !vector2.empty() && vector1.size() == vector2.size()) ? static_cast<int>(vector1.size()) : 0;
 
-  int local_result = 0;
-  for (int i = 0; i < local_size_; i++) {
-    local_result += local_input1_[i] * local_input2_[i];
+  int max_size = 0;
+  MPI_Allreduce(&local_size, &max_size, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+
+  if (max_size == 0) {
+    GetOutput() = 0;
+    return true;
   }
 
-  // Сбор результатов
-  MPI_Reduce(&local_result, &result, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+  const auto n = static_cast<size_t>(max_size);
+  const size_t base_chunk = n / static_cast<size_t>(size);
+  const size_t remainder = n % static_cast<size_t>(size);
 
+  const int remainder_i = static_cast<int>(remainder);
+  const bool has_extra = (rank < remainder_i);
+
+  const size_t start = (static_cast<size_t>(rank) * base_chunk) + static_cast<size_t>(std::min(rank, remainder_i));
+  const size_t end = start + base_chunk + (has_extra ? 1U : 0U);
+
+  int64_t local_dot = 0;
+
+  if (local_size > 0) {
+    const size_t local_n = vector1.size();
+    const size_t real_start = std::min(start, local_n);
+    const size_t real_end = std::min(end, local_n);
+
+    for (size_t i = real_start; i < real_end; ++i) {
+      local_dot += static_cast<int64_t>(vector1[i]) * static_cast<int64_t>(vector2[i]);
+    }
+  }
+
+  int64_t global_dot = 0;
+  MPI_Allreduce(&local_dot, &global_dot, 1, MPI_INT64_T, MPI_SUM, MPI_COMM_WORLD);
+
+  GetOutput() = static_cast<OutType>(global_dot);
   return true;
 }
 
 bool ZyazevaSVecDotProduct::PostProcessingImpl() {
-  if (world_rank == 0) {
-    GetOutput() = result;
-  } else {
-    GetOutput() = 0;
-  }
   return true;
 }
 

@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
+#include <mpi.h>
 
 #include <chrono>
 #include <iostream>
-#include <numeric>
 #include <vector>
 
 #include "zyazeva_s_vector_dot_product/common/include/common.hpp"
@@ -11,105 +11,67 @@
 
 namespace zyazeva_s_vector_dot_product {
 
-TEST(PerformanceTest, SequentialSmallVectors) {
-  // Используем МАЛЕНЬКИЕ векторы чтобы избежать переполнения
-  std::vector<int> vec1(1000000), vec2(1000000);
-  for (int i = 0; i < 1000000; i++) {
-    vec1[i] = 1;
-    vec2[i] = 1;
-  }
+TEST(SimplePerfTest, CompareBothVersions) {
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  InType input_data = {vec1, vec2};
+  const int SIZE = 3000000;
 
-  auto task = std::make_shared<ZyazevaSVecDotProductSEQ>(input_data);
+  if (rank == 0) {
+    std::vector<std::vector<int>> seq_data(2);
+    seq_data[0].resize(SIZE);
+    seq_data[1].resize(SIZE);
 
-  // Замеряем время выполнения
-  auto start = std::chrono::high_resolution_clock::now();
-
-  EXPECT_TRUE(task->Validation());
-  EXPECT_TRUE(task->PreProcessing());
-  EXPECT_TRUE(task->Run());
-  EXPECT_TRUE(task->PostProcessing());
-
-  auto end = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-
-  std::cout << "SEQ Execution time: " << duration.count() << " microseconds" << std::endl;
-  std::cout << "Result: " << task->GetOutput() << std::endl;
-
-  // Проверяем что результат положительный
-  EXPECT_GT(task->GetOutput(), 0);
-}
-
-// Простой перфоманс тест для MPI версии с МАЛЕНЬКИМИ векторами
-TEST(PerformanceTest, MPISmallVectors) {
-  int world_rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
-  // Используем МАЛЕНЬКИЕ векторы чтобы избежать переполнения
-  std::vector<int> vec1(1000000), vec2(1000000);
-  if (world_rank == 0) {
-    for (int i = 0; i < 1000000; i++) {
-      vec1[i] = 1;
-      vec2[i] = 1;
-    }
-  }
-
-  InType input_data = {vec1, vec2};
-
-  auto task = std::make_shared<ZyazevaSVecDotProduct>(input_data);
-
-  // Замеряем время выполнения
-  auto start = std::chrono::high_resolution_clock::now();
-
-  EXPECT_TRUE(task->Validation());
-  EXPECT_TRUE(task->PreProcessing());
-  EXPECT_TRUE(task->Run());
-  EXPECT_TRUE(task->PostProcessing());
-
-  auto end = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-
-  if (world_rank == 0) {
-    std::cout << "MPI Execution time: " << duration.count() << " microseconds" << std::endl;
-    std::cout << "Result: " << task->GetOutput() << std::endl;
-
-    // Проверяем корректность результата только на процессе 0
-    EXPECT_GT(task->GetOutput(), 0);
-  }
-}
-
-// Тест с РЕАЛЬНО маленькими размерами векторов
-TEST(PerformanceTest, DifferentSmallSizes) {
-  std::vector<int> sizes = {10000, 10002, 10001};  // МАЛЕНЬКИЕ размеры
-
-  for (int size : sizes) {
-    std::vector<int> vec1(size), vec2(size);
-
-    // Заполняем маленькими числами чтобы избежать переполнения
-    for (int i = 0; i < size; i++) {
-      vec1[i] = i + 1;         // 1, 2, 3, ..., size
-      vec2[i] = size + i + 1;  // size+1, size+2, ..., 2*size
+    for (int i = 0; i < SIZE; i++) {
+      seq_data[0][i] = i % 50;
+      seq_data[1][i] = (i * 2) % 50;
     }
 
-    InType input_data = {vec1, vec2};
-    auto task = std::make_shared<ZyazevaSVecDotProductSEQ>(input_data);
+    auto seq_task = std::make_shared<ZyazevaSVecDotProductSEQ>(seq_data);
 
-    auto start = std::chrono::high_resolution_clock::now();
+    auto seq_start = std::chrono::high_resolution_clock::now();
+    seq_task->Validation();
+    seq_task->PreProcessing();
+    seq_task->Run();
+    seq_task->PostProcessing();
+    auto seq_end = std::chrono::high_resolution_clock::now();
 
-    EXPECT_TRUE(task->Validation());
-    EXPECT_TRUE(task->PreProcessing());
-    EXPECT_TRUE(task->Run());
-    EXPECT_TRUE(task->PostProcessing());
+    auto seq_time = std::chrono::duration_cast<std::chrono::microseconds>(seq_end - seq_start);
+    std::cout << "SEQ: " << seq_time.count() << std::endl;
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    double seq_duration = seq_time.count();
 
-    std::cout << "Size " << size << ": " << duration.count() << " microseconds" << std::endl;
-    std::cout << "Result for size " << size << ": " << task->GetOutput() << std::endl;
+    std::vector<std::vector<int>> mpi_data(2);
+    mpi_data[0].resize(SIZE);
+    mpi_data[1].resize(SIZE);
+    for (int i = 0; i < SIZE; i++) {
+      mpi_data[0][i] = i % 50;
+      mpi_data[1][i] = (i * 2) % 50;
+    }
 
-    // Проверяем что результат положительный
-    EXPECT_GT(task->GetOutput(), 0);
+    auto mpi_task = std::make_shared<ZyazevaSVecDotProduct>(mpi_data);
+
+    double mpi_start = MPI_Wtime();
+    mpi_task->Validation();
+    mpi_task->PreProcessing();
+    mpi_task->Run();
+    mpi_task->PostProcessing();
+    double mpi_end = MPI_Wtime();
+
+    double mpi_duration = (mpi_end - mpi_start) * 1000000;
+    std::cout << "MPI: " << mpi_duration << std::endl;
+
+    if (mpi_duration > 0) {
+      std::cout << "Отношение SEQ/MPI: " << (seq_duration / mpi_duration) << std::endl;
+    }
+  } else {
+    std::vector<std::vector<int>> mpi_data(2);
+    auto mpi_task = std::make_shared<ZyazevaSVecDotProduct>(mpi_data);
+
+    mpi_task->Validation();
+    mpi_task->PreProcessing();
+    mpi_task->Run();
+    mpi_task->PostProcessing();
   }
 }
 

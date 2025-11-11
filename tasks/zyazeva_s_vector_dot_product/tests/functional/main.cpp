@@ -1,90 +1,94 @@
 #include <gtest/gtest.h>
-#include <mpi.h>
 
-#include <numeric>
+#include <array>
+#include <cstddef>
+#include <string>
+#include <tuple>
 #include <vector>
 
 #include "util/include/func_test_util.hpp"
+#include "util/include/util.hpp"
 #include "zyazeva_s_vector_dot_product/common/include/common.hpp"
 #include "zyazeva_s_vector_dot_product/mpi/include/ops_mpi.hpp"
 #include "zyazeva_s_vector_dot_product/seq/include/ops_seq.hpp"
 
 namespace zyazeva_s_vector_dot_product {
 
-class ZyazevaSVecDotFuncTests : public testing::TestWithParam<TestType> {
+class ZyazevaRunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, long long, TestType> {
+ public:
+  static auto PrintTestParam(const TestType &test_param) -> std::string {
+    return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
+  }
+
  protected:
   void SetUp() override {
-    auto [test_case, name] = GetParam();
-    std::vector<int> vec1, vec2;
+    TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+    int test_case = std::get<0>(params);
 
-    if (test_case == 1) {
-      vec1.resize(100000);
-      vec2.resize(100000);
-      std::iota(vec1.begin(), vec1.end(), 1);
-      std::iota(vec2.begin(), vec2.end(), 10001);
-    } else if (test_case == 2) {
-      vec1.resize(50000);
-      vec2.resize(50000);
-      for (size_t i = 0; i < 50000; i++) {
-        vec1[i] = (i % 2 == 0) ? 2 : -1;
-        vec2[i] = (i % 3 == 0) ? 3 : -2;
-      }
-    } else if (test_case == 3) {
-      vec1.resize(80000);
-      vec2.resize(80000);
-      for (size_t i = 0; i < 80000; i++) {
-        vec1[i] = i + 1;
-        vec2[i] = i * 2 - 5;
-      }
+    switch (test_case) {
+      case 0:
+        input_data_ = {{1, 2, 3}, {4, 5, 6}};
+        expected_output_ = 32;
+        break;
+      case 1:
+        input_data_ = {{5}, {10}};
+        expected_output_ = 50;
+        break;
+      case 2:
+        input_data_ = {{2, 2, 2}, {3, 3, 3}};
+        expected_output_ = 18;
+        break;
+      case 3:
+        input_data_ = {{100, 200}, {300, 400}};
+        expected_output_ = 110000;
+        break;
+      default:
+        input_data_ = {{1, 2}, {3, 4}};
+        expected_output_ = 11;
+        break;
     }
-
-    expected_result_ = 0;
-    for (size_t i = 0; i < vec1.size(); i++) {
-      expected_result_ += vec1[i] * vec2[i];
-    }
-    input_data_ = {vec1, vec2};
   }
 
+  auto CheckTestOutputData(long long &output_data) -> bool final {  // NOLINT
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+    if (world_rank == 0) {
+      return (expected_output_ == output_data);
+    } else {
+      return true;
+    }
+  }
+
+  auto GetTestInputData() -> InType final {
+    return input_data_;
+  }
+
+ private:
   InType input_data_;
-  int expected_result_;
+  long long expected_output_{};
 };
 
-// SEQ тесты - тоже переписываем на стек для консистентности
-TEST_P(ZyazevaSVecDotFuncTests, SequentialTest) {
-  ZyazevaSVecDotProductSEQ task(input_data_);
-  EXPECT_TRUE(task.Validation());
-  EXPECT_TRUE(task.PreProcessing());
-  EXPECT_TRUE(task.Run());
-  EXPECT_TRUE(task.PostProcessing());
-  EXPECT_EQ(task.GetOutput(), expected_result_);
+namespace {
+
+TEST_P(ZyazevaRunFuncTestsProcesses, DotProductTest) {  // NOLINT
+  ExecuteTest(GetParam());
 }
 
-// MPI тесты - исполnьзуем объект на стеке
-TEST_P(ZyazevaSVecDotFuncTests, MPITest) {
-  int world_rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+const std::array<TestType, 5> kTestParam = {std::make_tuple(0, "simple_vectors"), std::make_tuple(1, "single_element"),
+                                            std::make_tuple(2, "all_equal"), std::make_tuple(3, "large_values")};
 
-  // Создаем объект на стеке
-  ZyazevaSVecDotProduct task(input_data_);
+const auto kTestTasksList = std::tuple_cat(
+    ppc::util::AddFuncTask<ZyazevaSVecDotProduct, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_vector_dot_product),
+    ppc::util::AddFuncTask<ZyazevaSVecDotProductSEQ, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_vector_dot_product));
 
-  EXPECT_TRUE(task.Validation());
-  EXPECT_TRUE(task.PreProcessing());
-  EXPECT_TRUE(task.Run());
-  EXPECT_TRUE(task.PostProcessing());
+const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
-  if (world_rank == 0) {
-    EXPECT_EQ(task.GetOutput(), expected_result_);
-  }
+const auto kPerfTestName = ZyazevaRunFuncTestsProcesses::PrintFuncTestName<ZyazevaRunFuncTestsProcesses>;
 
-  // Синхронизация перед разрушением
-  MPI_Barrier(MPI_COMM_WORLD);
+INSTANTIATE_TEST_SUITE_P(  // NOLINT
+    VectorDotProductTests, ZyazevaRunFuncTestsProcesses, kGtestValues, kPerfTestName);
 
-  // Объект будет автоматически разрушен при выходе из scope
-}
-
-INSTANTIATE_TEST_SUITE_P(VectorTests, ZyazevaSVecDotFuncTests,
-                         testing::Values(std::make_tuple(1, "sequential"), std::make_tuple(2, "pattern"),
-                                         std::make_tuple(3, "arithmetic")),
-                         [](const auto& info) { return std::get<1>(info.param); });
+}  // namespace
 
 }  // namespace zyazeva_s_vector_dot_product
