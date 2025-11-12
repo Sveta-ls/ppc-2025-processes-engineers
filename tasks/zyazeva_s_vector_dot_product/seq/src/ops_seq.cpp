@@ -3,58 +3,51 @@
 #include <numeric>
 #include <vector>
 
-#include "zyazeva_s_vector_dot_product/common/include/common.hpp"
 #include "util/include/util.hpp"
+#include "zyazeva_s_vector_dot_product/common/include/common.hpp"
 
 namespace zyazeva_s_vector_dot_product {
 
-NesterovATestTaskSEQ::NesterovATestTaskSEQ(const InType &in) {
+ZyazevaSVecDotProductSEQ::ZyazevaSVecDotProductSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
-  GetInput() = in;
+  InType temp = in;
+  GetInput() = std::move(temp);
   GetOutput() = 0;
 }
 
-bool NesterovATestTaskSEQ::ValidationImpl() {
-  return (GetInput() > 0) && (GetOutput() == 0);
-}
-
-bool NesterovATestTaskSEQ::PreProcessingImpl() {
-  GetOutput() = 2 * GetInput();
-  return GetOutput() > 0;
-}
-
-bool NesterovATestTaskSEQ::RunImpl() {
-  if (GetInput() == 0) {
+bool ZyazevaSVecDotProductSEQ::ValidationImpl() {
+  auto &input = GetInput();
+  if (input.size() != 2) {
     return false;
   }
-
-  for (InType i = 0; i < GetInput(); i++) {
-    for (InType j = 0; j < GetInput(); j++) {
-      for (InType k = 0; k < GetInput(); k++) {
-        std::vector<InType> tmp(i + j + k, 1);
-        GetOutput() += std::accumulate(tmp.begin(), tmp.end(), 0);
-        GetOutput() -= i + j + k;
-      }
-    }
+  if (input[0].size() != input[1].size()) {
+    return false;
   }
-
-  const int num_threads = ppc::util::GetNumThreads();
-  GetOutput() *= num_threads;
-
-  int counter = 0;
-  for (int i = 0; i < num_threads; i++) {
-    counter++;
-  }
-
-  if (counter != 0) {
-    GetOutput() /= counter;
-  }
-  return GetOutput() > 0;
+  return !input[0].empty();
 }
 
-bool NesterovATestTaskSEQ::PostProcessingImpl() {
-  GetOutput() -= GetInput();
-  return GetOutput() > 0;
+bool ZyazevaSVecDotProductSEQ::PreProcessingImpl() {
+  GetOutput() = 0;
+  return true;
+}
+
+bool ZyazevaSVecDotProductSEQ::RunImpl() {
+  auto &input = GetInput();
+  auto &vec1 = input[0];
+  auto &vec2 = input[1];
+
+  int dot_product = 0;
+
+  for (size_t i = 0; i < vec1.size(); i++) {
+    dot_product += vec1[i] * vec2[i];
+  }
+
+  GetOutput() = dot_product;
+  return true;
+}
+
+bool ZyazevaSVecDotProductSEQ::PostProcessingImpl() {
+  return true;
 }
 
 }  // namespace zyazeva_s_vector_dot_product

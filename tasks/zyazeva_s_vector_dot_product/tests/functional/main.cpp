@@ -1,84 +1,150 @@
 #include <gtest/gtest.h>
-#include <stb/stb_image.h>
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
-#include <cstdint>
-#include <numeric>
-#include <stdexcept>
 #include <string>
 #include <tuple>
-#include <utility>
 #include <vector>
 
+#include "util/include/func_test_util.hpp"
+#include "util/include/util.hpp"
 #include "zyazeva_s_vector_dot_product/common/include/common.hpp"
 #include "zyazeva_s_vector_dot_product/mpi/include/ops_mpi.hpp"
 #include "zyazeva_s_vector_dot_product/seq/include/ops_seq.hpp"
-#include "util/include/func_test_util.hpp"
-#include "util/include/util.hpp"
 
 namespace zyazeva_s_vector_dot_product {
 
-class NesterovARunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
+class ZyazevaRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, long long, TestType> {
  public:
-  static std::string PrintTestParam(const TestType &test_param) {
+  static auto PrintTestParam(const TestType &test_param) -> std::string {
     return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
   }
 
  protected:
   void SetUp() override {
-    int width = -1;
-    int height = -1;
-    int channels = -1;
-    std::vector<uint8_t> img;
-    // Read image
-    {
-      std::string abs_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_example_processes, "pic.jpg");
-      auto *data = stbi_load(abs_path.c_str(), &width, &height, &channels, 0);
-      if (data == nullptr) {
-        throw std::runtime_error("Failed to load image: " + std::string(stbi_failure_reason()));
-      }
-      img = std::vector<uint8_t>(data, data + (static_cast<ptrdiff_t>(width * height * channels)));
-      stbi_image_free(data);
-      if (std::cmp_not_equal(width, height)) {
-        throw std::runtime_error("width != height: ");
-      }
-    }
-
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
-    input_data_ = width - height + std::min(std::accumulate(img.begin(), img.end(), 0), channels);
+    int test_case = std::get<0>(params);
+
+    switch (test_case) {
+      case 0:
+        input_data_ = {{1, 2, 3}, {4, 5, 6}};
+        expected_output_ = 32;
+        break;
+      case 1:
+        input_data_ = {{5}, {10}};
+        expected_output_ = 50;
+        break;
+      case 2:
+        input_data_ = {{2, 2, 2}, {3, 3, 3}};
+        expected_output_ = 18;
+        break;
+      case 3:
+        input_data_ = {{100, 200}, {300, 400}};
+        expected_output_ = 110000;
+        break;
+      default:
+        input_data_ = {{1, 2}, {3, 4}};
+        expected_output_ = 11;
+        break;
+    }
   }
 
-  bool CheckTestOutputData(OutType &output_data) final {
-    return (input_data_ == output_data);
+  auto CheckTestOutputData(long long &output_data) -> bool final {  // NOLINT
+    return (expected_output_ == output_data);
   }
 
-  InType GetTestInputData() final {
+  auto GetTestInputData() -> InType final {
     return input_data_;
   }
 
  private:
-  InType input_data_ = 0;
+  InType input_data_;
+  long long expected_output_{};
+};
+
+class ZyazevaRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, long long, TestType> {
+ public:
+  static auto PrintTestParam(const TestType &test_param) -> std::string {
+    return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
+  }
+
+ protected:
+  void SetUp() override {
+    TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+    int test_case = std::get<0>(params);
+
+    switch (test_case) {
+      case 0:
+        input_data_ = {{1, 2, 3}, {4, 5, 6}};
+        expected_output_ = 32;
+        break;
+      case 1:
+        input_data_ = {{5}, {10}};
+        expected_output_ = 50;
+        break;
+      case 2:
+        input_data_ = {{2, 2, 2}, {3, 3, 3}};
+        expected_output_ = 18;
+        break;
+      case 3:
+        input_data_ = {{100, 200}, {300, 400}};
+        expected_output_ = 110000;
+        break;
+      default:
+        input_data_ = {{1, 2}, {3, 4}};
+        expected_output_ = 11;
+        break;
+    }
+  }
+
+  auto CheckTestOutputData(long long &output_data) -> bool final {  // NOLINT
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+    if (world_rank == 0) {
+      return (expected_output_ == output_data);
+    } else {
+      return true;
+    }
+  }
+
+  auto GetTestInputData() -> InType final {
+    return input_data_;
+  }
+
+ private:
+  InType input_data_;
+  long long expected_output_{};
 };
 
 namespace {
 
-TEST_P(NesterovARunFuncTestsProcesses, MatmulFromPic) {
+TEST_P(ZyazevaRunFuncTestsSEQ, DotProductTestSEQ) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 3> kTestParam = {std::make_tuple(3, "3"), std::make_tuple(5, "5"), std::make_tuple(7, "7")};
+TEST_P(ZyazevaRunFuncTestsMPI, DotProductTestMPI) {
+  ExecuteTest(GetParam());
+}
 
-const auto kTestTasksList =
-    std::tuple_cat(ppc::util::AddFuncTask<NesterovATestTaskMPI, InType>(kTestParam, PPC_SETTINGS_example_processes),
-                   ppc::util::AddFuncTask<NesterovATestTaskSEQ, InType>(kTestParam, PPC_SETTINGS_example_processes));
+const std::array<TestType, 5> kTestParam = {std::make_tuple(0, "simple_vectors"), std::make_tuple(1, "single_element"),
+                                            std::make_tuple(2, "all_equal"), std::make_tuple(3, "large_values")};
 
-const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
+const auto kTestTasksListSEQ =
+    ppc::util::AddFuncTask<ZyazevaSVecDotProductSEQ, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_vector_dot_product);
 
-const auto kPerfTestName = NesterovARunFuncTestsProcesses::PrintFuncTestName<NesterovARunFuncTestsProcesses>;
+const auto kTestTasksListMPI =
+    ppc::util::AddFuncTask<ZyazevaSVecDotProduct, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_vector_dot_product);
 
-INSTANTIATE_TEST_SUITE_P(PicMatrixTests, NesterovARunFuncTestsProcesses, kGtestValues, kPerfTestName);
+const auto kGtestValuesSEQ = ppc::util::ExpandToValues(kTestTasksListSEQ);
+const auto kGtestValuesMPI = ppc::util::ExpandToValues(kTestTasksListMPI);
+
+const auto kPerfTestNameSEQ = ZyazevaRunFuncTestsSEQ::PrintFuncTestName<ZyazevaRunFuncTestsSEQ>;
+const auto kPerfTestNameMPI = ZyazevaRunFuncTestsMPI::PrintFuncTestName<ZyazevaRunFuncTestsMPI>;
+
+INSTANTIATE_TEST_SUITE_P(VectorDotProductTestsSEQ, ZyazevaRunFuncTestsSEQ, kGtestValuesSEQ, kPerfTestNameSEQ);
+
+INSTANTIATE_TEST_SUITE_P(VectorDotProductTestsMPI, ZyazevaRunFuncTestsMPI, kGtestValuesMPI, kPerfTestNameMPI);
 
 }  // namespace
 

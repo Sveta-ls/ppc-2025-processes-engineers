@@ -2,71 +2,74 @@
 
 #include <mpi.h>
 
-#include <numeric>
-#include <vector>
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
 
 #include "zyazeva_s_vector_dot_product/common/include/common.hpp"
-#include "util/include/util.hpp"
 
 namespace zyazeva_s_vector_dot_product {
 
-NesterovATestTaskMPI::NesterovATestTaskMPI(const InType &in) {
+bool ZyazevaSVecDotProduct::ValidationImpl() {
   SetTypeOfTask(GetStaticTypeOfTask());
-  GetInput() = in;
+  const auto& input = GetInput();
+  return input.size() == 2 && input[0].size() == input[1].size();
+}
+
+bool ZyazevaSVecDotProduct::PreProcessingImpl() {
   GetOutput() = 0;
+  return true;
 }
 
-bool NesterovATestTaskMPI::ValidationImpl() {
-  return (GetInput() > 0) && (GetOutput() == 0);
-}
-
-bool NesterovATestTaskMPI::PreProcessingImpl() {
-  GetOutput() = 2 * GetInput();
-  return GetOutput() > 0;
-}
-
-bool NesterovATestTaskMPI::RunImpl() {
-  auto input = GetInput();
-  if (input == 0) {
-    return false;
-  }
-
-  for (InType i = 0; i < GetInput(); i++) {
-    for (InType j = 0; j < GetInput(); j++) {
-      for (InType k = 0; k < GetInput(); k++) {
-        std::vector<InType> tmp(i + j + k, 1);
-        GetOutput() += std::accumulate(tmp.begin(), tmp.end(), 0);
-        GetOutput() -= i + j + k;
-      }
-    }
-  }
-
-  const int num_threads = ppc::util::GetNumThreads();
-  GetOutput() *= num_threads;
-
-  int rank = 0;
+bool ZyazevaSVecDotProduct::RunImpl() {
+  int rank, size;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  if (rank == 0) {
-    GetOutput() /= num_threads;
-  } else {
-    int counter = 0;
-    for (int i = 0; i < num_threads; i++) {
-      counter++;
-    }
+  const auto& input = GetInput();
+  const auto& vector1 = input[0];
+  const auto& vector2 = input[1];
 
-    if (counter != 0) {
-      GetOutput() /= counter;
+  bool has_data = !vector1.empty() && !vector2.empty() && (vector1.size() == vector2.size());
+  int local_size = has_data ? static_cast<int>(vector1.size()) : 0;
+
+  int max_size;
+  MPI_Allreduce(&local_size, &max_size, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+
+  if (max_size == 0) {
+    GetOutput() = 0;
+    return true;
+  }
+
+  const size_t total_elements = static_cast<size_t>(max_size);
+  const size_t base_chunk_size = total_elements / size;
+  const size_t remaining_elements = total_elements % size;
+
+  const size_t start_index =
+      static_cast<size_t>(rank) * base_chunk_size + std::min(static_cast<size_t>(rank), remaining_elements);
+  const bool needs_extra_element = (static_cast<size_t>(rank) < remaining_elements);
+  const size_t end_index = start_index + base_chunk_size + (needs_extra_element ? 1UL : 0UL);
+
+  int64_t local_dot_product = 0;
+
+  if (has_data) {
+    const size_t actual_start = std::min(start_index, vector1.size());
+    const size_t actual_end = std::min(end_index, vector1.size());
+
+    for (size_t i = actual_start; i < actual_end; ++i) {
+      local_dot_product += static_cast<int64_t>(vector1[i]) * static_cast<int64_t>(vector2[i]);
     }
   }
 
-  MPI_Barrier(MPI_COMM_WORLD);
-  return GetOutput() > 0;
+  int64_t global_dot_product;
+  MPI_Allreduce(&local_dot_product, &global_dot_product, 1, MPI_INT64_T, MPI_SUM, MPI_COMM_WORLD);
+
+  GetOutput() = static_cast<OutType>(global_dot_product);
+  return true;
 }
 
-bool NesterovATestTaskMPI::PostProcessingImpl() {
-  GetOutput() -= GetInput();
-  return GetOutput() > 0;
+bool ZyazevaSVecDotProduct::PostProcessingImpl() {
+  return true;
 }
 
 }  // namespace zyazeva_s_vector_dot_product
