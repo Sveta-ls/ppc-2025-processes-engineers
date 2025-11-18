@@ -62,7 +62,7 @@ TEST(SimplePerfTest, CompareBothVersions) {
     std::cout << "MPI: " << mpi_duration << '\n';
 
     if (mpi_duration > 0) {
-      std::cout << "Отношение SEQ/MPI: " << (seq_duration / mpi_duration) << '\n';
+      std::cout << "Отношение SEQ/MPI:  " << (seq_duration / mpi_duration) << '\n';
     }
   } else {
     std::vector<std::vector<int>> mpi_data(2);
