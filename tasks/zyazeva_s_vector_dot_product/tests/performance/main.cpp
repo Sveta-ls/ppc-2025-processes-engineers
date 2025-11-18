@@ -82,7 +82,7 @@ TEST(SimplePerfTest, CompareBothVersions) {
     auto seq_end = std::chrono::high_resolution_clock::now();
 
     auto seq_time = std::chrono::duration_cast<std::chrono::microseconds>(seq_end - seq_start);
-    std::cout << "SEQ: " << seq_time.count() << " microseconds\n";
+    std::cout << "SEQ:  " << seq_time.count() << " microseconds\n";
 
     auto seq_duration = static_cast<double>(seq_time.count());
 
