@@ -3,26 +3,26 @@
 
 #include <chrono>
 #include <iostream>
+#include <memory>
 #include <vector>
 
-#include "zyazeva_s_vector_dot_product/common/include/common.hpp"
 #include "zyazeva_s_vector_dot_product/mpi/include/ops_mpi.hpp"
 #include "zyazeva_s_vector_dot_product/seq/include/ops_seq.hpp"
 
 namespace zyazeva_s_vector_dot_product {
 
 TEST(SimplePerfTest, CompareBothVersions) {
-  int rank;
+  int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  const int SIZE = 1000000;
+  const int size = 1000000;
 
   if (rank == 0) {
     std::vector<std::vector<int>> seq_data(2);
-    seq_data[0].resize(SIZE);
-    seq_data[1].resize(SIZE);
+    seq_data[0].resize(size);
+    seq_data[1].resize(size);
 
-    for (int i = 0; i < SIZE; i++) {
+    for (int i = 0; i < size; i++) {
       seq_data[0][i] = i % 50;
       seq_data[1][i] = (i * 2) % 50;
     }
@@ -37,14 +37,14 @@ TEST(SimplePerfTest, CompareBothVersions) {
     auto seq_end = std::chrono::high_resolution_clock::now();
 
     auto seq_time = std::chrono::duration_cast<std::chrono::microseconds>(seq_end - seq_start);
-    std::cout << "SEQ: " << seq_time.count() << std::endl;
+    std::cout << "SEQ: " << seq_time.count() << '\n';
 
-    double seq_duration = seq_time.count();
+    auto seq_duration = static_cast<double>(seq_time.count());
 
     std::vector<std::vector<int>> mpi_data(2);
-    mpi_data[0].resize(SIZE);
-    mpi_data[1].resize(SIZE);
-    for (int i = 0; i < SIZE; i++) {
+    mpi_data[0].resize(size);
+    mpi_data[1].resize(size);
+    for (int i = 0; i < size; i++) {
       mpi_data[0][i] = i % 50;
       mpi_data[1][i] = (i * 2) % 50;
     }
@@ -58,11 +58,11 @@ TEST(SimplePerfTest, CompareBothVersions) {
     mpi_task->PostProcessing();
     double mpi_end = MPI_Wtime();
 
-    double mpi_duration = (mpi_end - mpi_start) * 1000000;
-    std::cout << "MPI: " << mpi_duration << std::endl;
+    double mpi_duration = (mpi_end - mpi_start) * 1000000.0;
+    std::cout << "MPI: " << mpi_duration << '\n';
 
     if (mpi_duration > 0) {
-      std::cout << "Отношение SEQ/MPI: " << (seq_duration / mpi_duration) << std::endl;
+      std::cout << "Отношение SEQ/MPI: " << (seq_duration / mpi_duration) << '\n';
     }
   } else {
     std::vector<std::vector<int>> mpi_data(2);

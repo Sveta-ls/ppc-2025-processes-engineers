@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <vector>
 
 #include "zyazeva_s_vector_dot_product/common/include/common.hpp"
 
@@ -22,7 +23,8 @@ bool ZyazevaSVecDotProduct::PreProcessingImpl() {
 }
 
 bool ZyazevaSVecDotProduct::RunImpl() {
-  int rank, size;
+  int rank = 0;
+  int size = 1;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
@@ -33,7 +35,7 @@ bool ZyazevaSVecDotProduct::RunImpl() {
   bool has_data = !vector1.empty() && !vector2.empty() && (vector1.size() == vector2.size());
   int local_size = has_data ? static_cast<int>(vector1.size()) : 0;
 
-  int max_size;
+  int max_size = 0;
   MPI_Allreduce(&local_size, &max_size, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
 
   if (max_size == 0) {
@@ -41,12 +43,14 @@ bool ZyazevaSVecDotProduct::RunImpl() {
     return true;
   }
 
-  const size_t total_elements = static_cast<size_t>(max_size);
-  const size_t base_chunk_size = total_elements / size;
-  const size_t remaining_elements = total_elements % size;
+  const auto total_elements = static_cast<size_t>(max_size);
+  const auto base_chunk_size = total_elements / static_cast<size_t>(size);
+  const auto remaining_elements = total_elements % static_cast<size_t>(size);
 
   const size_t start_index =
-      static_cast<size_t>(rank) * base_chunk_size + std::min(static_cast<size_t>(rank), remaining_elements);
+      (static_cast<size_t>(rank) * base_chunk_size) + std::min(static_cast<size_t>(rank), remaining_elements);
+
+  // Заменили std::cmp_less на обычное сравнение с приведением типов
   const bool needs_extra_element = (static_cast<size_t>(rank) < remaining_elements);
   const size_t end_index = start_index + base_chunk_size + (needs_extra_element ? 1UL : 0UL);
 
@@ -61,7 +65,7 @@ bool ZyazevaSVecDotProduct::RunImpl() {
     }
   }
 
-  int64_t global_dot_product;
+  int64_t global_dot_product = 0;
   MPI_Allreduce(&local_dot_product, &global_dot_product, 1, MPI_INT64_T, MPI_SUM, MPI_COMM_WORLD);
 
   GetOutput() = static_cast<OutType>(global_dot_product);

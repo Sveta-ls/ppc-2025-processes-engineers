@@ -1,9 +1,10 @@
 #include "zyazeva_s_vector_dot_product/seq/include/ops_seq.hpp"
 
-#include <numeric>
+#include <algorithm> 
+#include <cstddef>    
+#include <utility>    
 #include <vector>
 
-#include "util/include/util.hpp"
 #include "zyazeva_s_vector_dot_product/common/include/common.hpp"
 
 namespace zyazeva_s_vector_dot_product {

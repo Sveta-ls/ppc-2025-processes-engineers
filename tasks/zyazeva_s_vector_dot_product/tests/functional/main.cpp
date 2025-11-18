@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <mpi.h>
 
 #include <array>
 #include <cstddef>
@@ -99,14 +100,13 @@ class ZyazevaRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, int64_
   }
 
   auto CheckTestOutputData(int64_t &output_data) -> bool final {  // NOLINT
-    int world_rank;
+    int world_rank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
     if (world_rank == 0) {
       return (expected_output_ == output_data);
-    } else {
-      return true;
     }
+    return true;
   }
 
   auto GetTestInputData() -> InType final {
@@ -128,12 +128,8 @@ TEST_P(ZyazevaRunFuncTestsMPI, DotProductTestMPI) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 4> kTestParam = {
-    std::make_tuple(0, "simple_vectors"),
-    std::make_tuple(1, "single_element"),
-    std::make_tuple(2, "all_equal"), 
-    std::make_tuple(3, "large_values")
-};
+const std::array<TestType, 4> kTestParam = {std::make_tuple(0, "simple_vectors"), std::make_tuple(1, "single_element"),
+                                            std::make_tuple(2, "all_equal"), std::make_tuple(3, "large_values")};
 
 const auto kTestTasksListSEQ =
     ppc::util::AddFuncTask<ZyazevaSVecDotProductSEQ, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_vector_dot_product);

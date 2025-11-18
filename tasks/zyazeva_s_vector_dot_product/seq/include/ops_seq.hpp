@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdint>
+#include <vector>
+
 #include "task/include/task.hpp"
 #include "zyazeva_s_vector_dot_product/common/include/common.hpp"
 
