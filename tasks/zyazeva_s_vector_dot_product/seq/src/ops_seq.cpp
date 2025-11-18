@@ -1,8 +1,8 @@
 #include "zyazeva_s_vector_dot_product/seq/include/ops_seq.hpp"
 
-#include <algorithm> 
-#include <cstddef>    
-#include <utility>    
+#include <algorithm>
+#include <cstddef>
+#include <utility>
 #include <vector>
 
 #include "zyazeva_s_vector_dot_product/common/include/common.hpp"

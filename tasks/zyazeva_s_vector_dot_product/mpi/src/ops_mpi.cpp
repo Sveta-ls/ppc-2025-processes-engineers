@@ -13,7 +13,7 @@ namespace zyazeva_s_vector_dot_product {
 
 bool ZyazevaSVecDotProduct::ValidationImpl() {
   SetTypeOfTask(GetStaticTypeOfTask());
-  const auto& input = GetInput();
+  const auto &input = GetInput();
   return input.size() == 2 && input[0].size() == input[1].size();
 }
 
@@ -28,9 +28,9 @@ bool ZyazevaSVecDotProduct::RunImpl() {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  const auto& input = GetInput();
-  const auto& vector1 = input[0];
-  const auto& vector2 = input[1];
+  const auto &input = GetInput();
+  const auto &vector1 = input[0];
+  const auto &vector2 = input[1];
 
   bool has_data = !vector1.empty() && !vector2.empty() && (vector1.size() == vector2.size());
   int local_size = has_data ? static_cast<int>(vector1.size()) : 0;
