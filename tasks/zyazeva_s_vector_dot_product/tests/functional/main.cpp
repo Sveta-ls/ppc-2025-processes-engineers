@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -14,7 +15,7 @@
 
 namespace zyazeva_s_vector_dot_product {
 
-class ZyazevaRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, long long, TestType> {
+class ZyazevaRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, int64_t, TestType> {
  public:
   static auto PrintTestParam(const TestType &test_param) -> std::string {
     return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
@@ -23,7 +24,7 @@ class ZyazevaRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, long l
  protected:
   void SetUp() override {
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
-    int test_case = std::get<0>(params);
+    int64_t test_case = std::get<0>(params);
 
     switch (test_case) {
       case 0:
@@ -49,7 +50,7 @@ class ZyazevaRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, long l
     }
   }
 
-  auto CheckTestOutputData(long long &output_data) -> bool final {  // NOLINT
+  auto CheckTestOutputData(int64_t &output_data) -> bool final {  // NOLINT
     return (expected_output_ == output_data);
   }
 
@@ -59,10 +60,10 @@ class ZyazevaRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, long l
 
  private:
   InType input_data_;
-  long long expected_output_{};
+  int64_t expected_output_{};
 };
 
-class ZyazevaRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, long long, TestType> {
+class ZyazevaRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, int64_t, TestType> {
  public:
   static auto PrintTestParam(const TestType &test_param) -> std::string {
     return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
@@ -71,7 +72,7 @@ class ZyazevaRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, long l
  protected:
   void SetUp() override {
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
-    int test_case = std::get<0>(params);
+    int64_t test_case = std::get<0>(params);
 
     switch (test_case) {
       case 0:
@@ -97,7 +98,7 @@ class ZyazevaRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, long l
     }
   }
 
-  auto CheckTestOutputData(long long &output_data) -> bool final {  // NOLINT
+  auto CheckTestOutputData(int64_t &output_data) -> bool final {  // NOLINT
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
@@ -114,7 +115,7 @@ class ZyazevaRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, long l
 
  private:
   InType input_data_;
-  long long expected_output_{};
+  int64_t expected_output_{};
 };
 
 namespace {
@@ -127,8 +128,12 @@ TEST_P(ZyazevaRunFuncTestsMPI, DotProductTestMPI) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 5> kTestParam = {std::make_tuple(0, "simple_vectors"), std::make_tuple(1, "single_element"),
-                                            std::make_tuple(2, "all_equal"), std::make_tuple(3, "large_values")};
+const std::array<TestType, 4> kTestParam = {
+    std::make_tuple(0, "simple_vectors"),
+    std::make_tuple(1, "single_element"),
+    std::make_tuple(2, "all_equal"), 
+    std::make_tuple(3, "large_values")
+};
 
 const auto kTestTasksListSEQ =
     ppc::util::AddFuncTask<ZyazevaSVecDotProductSEQ, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_vector_dot_product);

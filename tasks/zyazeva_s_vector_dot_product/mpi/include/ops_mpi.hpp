@@ -3,6 +3,7 @@
 #include <mpi.h>
 
 #include <vector>
+#include <utility>
 
 #include "task/include/task.hpp"
 #include "zyazeva_s_vector_dot_product/common/include/common.hpp"
@@ -16,7 +17,7 @@ class ZyazevaSVecDotProduct : public BaseTask {
   }
 
   explicit ZyazevaSVecDotProduct(std::vector<std::vector<int>> input)
-      : ppc::task::Task<std::vector<std::vector<int>>, long long>() {
+      : ppc::task::Task<std::vector<std::vector<int>>, int64_t>() {
     GetInput() = std::move(input);
   }
 
