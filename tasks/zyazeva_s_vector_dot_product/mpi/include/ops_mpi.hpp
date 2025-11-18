@@ -2,8 +2,8 @@
 
 #include <mpi.h>
 
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "task/include/task.hpp"
 #include "zyazeva_s_vector_dot_product/common/include/common.hpp"
