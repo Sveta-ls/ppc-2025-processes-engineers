@@ -50,7 +50,6 @@ bool ZyazevaSVecDotProduct::RunImpl() {
   const size_t start_index =
       (static_cast<size_t>(rank) * base_chunk_size) + std::min(static_cast<size_t>(rank), remaining_elements);
 
-  // Заменили std::cmp_less на обычное сравнение с приведением типов
   const bool needs_extra_element = (static_cast<size_t>(rank) < remaining_elements);
   const size_t end_index = start_index + base_chunk_size + (needs_extra_element ? 1UL : 0UL);
 
