@@ -1,9 +1,15 @@
 #include <gtest/gtest.h>
+#include <limits.h>
 #include <mpi.h>
+#include <unistd.h>
 
+#include <algorithm>
 #include <chrono>
+#include <fstream>
 #include <iostream>
 #include <memory>
+#include <sstream>
+#include <string>
 #include <vector>
 
 #include "zyazeva_s_vector_dot_product/mpi/include/ops_mpi.hpp"
@@ -11,23 +17,62 @@
 
 namespace zyazeva_s_vector_dot_product {
 
+std::vector<std::vector<int>> loadVectorsFromFile(const std::string& filename);
+std::string getAbsolutePath(const std::string& relative_path);
+bool fileExists(const std::string& filename);
+
+std::string getAbsolutePath(const std::string& relative_path) {
+  char abs_path[PATH_MAX];
+  if (realpath(relative_path.c_str(), abs_path) != nullptr) {
+    return std::string(abs_path);
+  }
+  return relative_path;
+}
+
+std::vector<std::vector<int>> loadVectorsFromFile(const std::string& filename) {
+  std::string abs_path = getAbsolutePath(filename);
+
+  std::vector<std::vector<int>> vectors(2);
+  std::ifstream file(filename);
+
+  std::string line;
+  int line_count = 0;
+
+  while (std::getline(file, line)) {
+    std::replace(line.begin(), line.end(), ',', ' ');
+
+    std::istringstream iss(line);
+    std::vector<int> vec;
+    int value;
+
+    while (iss >> value) {
+      vec.push_back(value);
+    }
+
+    if (line_count < 2) {
+      vectors[line_count] = vec;
+    } else {
+      break;
+    }
+
+    line_count++;
+  }
+
+  file.close();
+
+  return vectors;
+}
+
 TEST(SimplePerfTest, CompareBothVersions) {
   int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  const int size = 1000000;
-
   if (rank == 0) {
-    std::vector<std::vector<int>> seq_data(2);
-    seq_data[0].resize(size);
-    seq_data[1].resize(size);
+    std::vector<std::vector<int>> data;
 
-    for (int i = 0; i < size; i++) {
-      seq_data[0][i] = i % 50;
-      seq_data[1][i] = (i * 2) % 50;
-    }
-
-    auto seq_task = std::make_shared<ZyazevaSVecDotProductSEQ>(seq_data);
+    data = loadVectorsFromFile(
+        "/workspaces/ppc-2025-processes-engineers-1/tasks/zyazeva_s_vector_dot_product/data/input.txt");
+    auto seq_task = std::make_shared<ZyazevaSVecDotProductSEQ>(data);
 
     auto seq_start = std::chrono::high_resolution_clock::now();
     seq_task->Validation();
@@ -37,19 +82,11 @@ TEST(SimplePerfTest, CompareBothVersions) {
     auto seq_end = std::chrono::high_resolution_clock::now();
 
     auto seq_time = std::chrono::duration_cast<std::chrono::microseconds>(seq_end - seq_start);
-    std::cout << "SEQ: " << seq_time.count() << '\n';
+    std::cout << "SEQ: " << seq_time.count() << " microseconds\n";
 
     auto seq_duration = static_cast<double>(seq_time.count());
 
-    std::vector<std::vector<int>> mpi_data(2);
-    mpi_data[0].resize(size);
-    mpi_data[1].resize(size);
-    for (int i = 0; i < size; i++) {
-      mpi_data[0][i] = i % 50;
-      mpi_data[1][i] = (i * 2) % 50;
-    }
-
-    auto mpi_task = std::make_shared<ZyazevaSVecDotProduct>(mpi_data);
+    auto mpi_task = std::make_shared<ZyazevaSVecDotProduct>(data);
 
     double mpi_start = MPI_Wtime();
     mpi_task->Validation();
@@ -59,11 +96,12 @@ TEST(SimplePerfTest, CompareBothVersions) {
     double mpi_end = MPI_Wtime();
 
     double mpi_duration = (mpi_end - mpi_start) * 1000000.0;
-    std::cout << "MPI: " << mpi_duration << '\n';
+    std::cout << "MPI: " << mpi_duration << " microseconds\n";
 
     if (mpi_duration > 0) {
-      std::cout << "Отношение SEQ/MPI:  " << (seq_duration / mpi_duration) << '\n';
+      std::cout << "Отношение SEQ/MPI: " << (seq_duration / mpi_duration) << '\n';
     }
+
   } else {
     std::vector<std::vector<int>> mpi_data(2);
     auto mpi_task = std::make_shared<ZyazevaSVecDotProduct>(mpi_data);
