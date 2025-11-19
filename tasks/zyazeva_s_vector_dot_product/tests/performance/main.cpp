@@ -1,13 +1,11 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
-#include <algorithm>
 #include <chrono>
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
