@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
-#include <limits.h>
 #include <mpi.h>
-#include <unistd.h>
 
 #include <algorithm>
 #include <chrono>
