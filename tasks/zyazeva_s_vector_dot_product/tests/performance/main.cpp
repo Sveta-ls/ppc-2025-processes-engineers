@@ -15,6 +15,8 @@
 
 namespace zyazeva_s_vector_dot_product {
 
+std::vector<std::vector<int>> loadVectorsFromFile(const std::string &filename);
+
 std::vector<std::vector<int>> loadVectorsFromFile(const std::string &filename) {
   std::vector<std::vector<int>> vectors(2);
   std::ifstream file(filename);
