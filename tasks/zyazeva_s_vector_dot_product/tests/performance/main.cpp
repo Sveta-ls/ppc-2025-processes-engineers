@@ -20,10 +20,7 @@ std::string getAbsolutePath(const std::string &relative_path);
 bool fileExists(const std::string &filename);
 
 std::string getAbsolutePath(const std::string &relative_path) {
-  char abs_path[PATH_MAX];
-  if (realpath(relative_path.c_str(), abs_path) != nullptr) {
-    return std::string(abs_path);
-  }
+  char abs_path[93];
   return relative_path;
 }
 
