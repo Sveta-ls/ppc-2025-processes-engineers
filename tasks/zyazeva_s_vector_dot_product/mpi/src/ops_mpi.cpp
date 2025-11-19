@@ -44,14 +44,14 @@ bool ZyazevaSVecDotProduct::RunImpl() {
   }
 
   const auto total_elements = static_cast<size_t>(max_size);
-  const auto base_chunk_size = total_elements / static_cast<size_t>(size);
+  const auto chunk_size = total_elements / static_cast<size_t>(size);
   const auto remaining_elements = total_elements % static_cast<size_t>(size);
 
   const size_t start_index =
-      (static_cast<size_t>(rank) * base_chunk_size) + std::min(static_cast<size_t>(rank), remaining_elements);
+      (static_cast<size_t>(rank) * chunk_size) + std::min(static_cast<size_t>(rank), remaining_elements);
 
-  const bool needs_extra_element = (static_cast<size_t>(rank) < remaining_elements);
-  const size_t end_index = start_index + base_chunk_size + (needs_extra_element ? 1UL : 0UL);
+  const bool needs_more_element = (static_cast<int>(remaining_elements) > rank);
+  const size_t end_index = start_index + chunk_size + (needs_more_element ? 1UL : 0UL);
 
   int64_t local_dot_product = 0;
 

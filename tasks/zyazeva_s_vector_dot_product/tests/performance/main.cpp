@@ -15,11 +15,15 @@
 
 namespace zyazeva_s_vector_dot_product {
 
-std::vector<std::vector<int>> loadVectorsFromFile(const std::string &filename);
+namespace {
 
-std::vector<std::vector<int>> loadVectorsFromFile(const std::string &filename) {
+static std::vector<std::vector<int>> LoadVectorsFromFile(const std::string &filename) {
   std::vector<std::vector<int>> vectors(2);
   std::ifstream file(filename);
+
+  if (!file.is_open()) {
+    throw std::runtime_error("Cannot open file: " + filename);
+  }
 
   std::string line;
   int line_count = 0;
@@ -29,7 +33,7 @@ std::vector<std::vector<int>> loadVectorsFromFile(const std::string &filename) {
 
     std::istringstream iss(line);
     std::vector<int> vec;
-    int value;
+    int value = 0;
 
     while (iss >> value) {
       vec.push_back(value);
@@ -49,6 +53,8 @@ std::vector<std::vector<int>> loadVectorsFromFile(const std::string &filename) {
   return vectors;
 }
 
+}  // namespace
+
 TEST(SimplePerfTest, CompareBothVersions) {
   int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -56,7 +62,7 @@ TEST(SimplePerfTest, CompareBothVersions) {
   if (rank == 0) {
     std::vector<std::vector<int>> data;
 
-    data = loadVectorsFromFile("tasks/zyazeva_s_vector_dot_product/data/input.txt");
+    data = LoadVectorsFromFile("tasks/zyazeva_s_vector_dot_product/data/input.txt");
 
     auto seq_task = std::make_shared<ZyazevaSVecDotProductSEQ>(data);
 

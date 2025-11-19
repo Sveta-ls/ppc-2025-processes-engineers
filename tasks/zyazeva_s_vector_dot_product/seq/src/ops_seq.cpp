@@ -1,6 +1,5 @@
 #include "zyazeva_s_vector_dot_product/seq/include/ops_seq.hpp"
 
-#include <algorithm>
 #include <cstddef>
 #include <utility>
 #include <vector>
