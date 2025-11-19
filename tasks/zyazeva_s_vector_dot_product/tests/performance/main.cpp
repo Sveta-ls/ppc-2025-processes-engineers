@@ -17,11 +17,11 @@
 
 namespace zyazeva_s_vector_dot_product {
 
-std::vector<std::vector<int>> loadVectorsFromFile(const std::string& filename);
-std::string getAbsolutePath(const std::string& relative_path);
-bool fileExists(const std::string& filename);
+std::vector<std::vector<int>> loadVectorsFromFile(const std::string &filename);
+std::string getAbsolutePath(const std::string &relative_path);
+bool fileExists(const std::string &filename);
 
-std::string getAbsolutePath(const std::string& relative_path) {
+std::string getAbsolutePath(const std::string &relative_path) {
   char abs_path[PATH_MAX];
   if (realpath(relative_path.c_str(), abs_path) != nullptr) {
     return std::string(abs_path);
@@ -29,7 +29,7 @@ std::string getAbsolutePath(const std::string& relative_path) {
   return relative_path;
 }
 
-std::vector<std::vector<int>> loadVectorsFromFile(const std::string& filename) {
+std::vector<std::vector<int>> loadVectorsFromFile(const std::string &filename) {
   std::string abs_path = getAbsolutePath(filename);
 
   std::vector<std::vector<int>> vectors(2);
