@@ -62,7 +62,8 @@ TEST(SimplePerfTest, CompareBothVersions) {
   if (rank == 0) {
     std::vector<std::vector<int>> data;
 
-    data = LoadVectorsFromFile("/workspaces/ppc-2025-processes-engineers-1/tasks/zyazeva_s_vector_dot_product/data/input.txt");
+    data = LoadVectorsFromFile(
+        "/workspaces/ppc-2025-processes-engineers-1/tasks/zyazeva_s_vector_dot_product/data/input.txt");
 
     auto seq_task = std::make_shared<ZyazevaSVecDotProductSEQ>(data);
 
