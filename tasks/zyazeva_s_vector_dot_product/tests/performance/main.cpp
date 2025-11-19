@@ -7,6 +7,7 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -17,7 +18,7 @@ namespace zyazeva_s_vector_dot_product {
 
 namespace {
 
-static std::vector<std::vector<int>> LoadVectorsFromFile(const std::string &filename) {
+std::vector<std::vector<int>> LoadVectorsFromFile(const std::string &filename) {
   std::vector<std::vector<int>> vectors(2);
   std::ifstream file(filename);
 
