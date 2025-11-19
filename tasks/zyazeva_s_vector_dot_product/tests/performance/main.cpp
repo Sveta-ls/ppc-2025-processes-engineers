@@ -15,18 +15,7 @@
 
 namespace zyazeva_s_vector_dot_product {
 
-std::vector<std::vector<int>> loadVectorsFromFile(const std::string &filename);
-std::string getAbsolutePath(const std::string &relative_path);
-bool fileExists(const std::string &filename);
-
-std::string getAbsolutePath(const std::string &relative_path) {
-  char abs_path[93];
-  return relative_path;
-}
-
 std::vector<std::vector<int>> loadVectorsFromFile(const std::string &filename) {
-  std::string abs_path = getAbsolutePath(filename);
-
   std::vector<std::vector<int>> vectors(2);
   std::ifstream file(filename);
 
@@ -65,8 +54,8 @@ TEST(SimplePerfTest, CompareBothVersions) {
   if (rank == 0) {
     std::vector<std::vector<int>> data;
 
-    data = loadVectorsFromFile(
-        "/workspaces/ppc-2025-processes-engineers-1/tasks/zyazeva_s_vector_dot_product/data/input.txt");
+    data = loadVectorsFromFile("tasks/zyazeva_s_vector_dot_product/data/input.txt");
+
     auto seq_task = std::make_shared<ZyazevaSVecDotProductSEQ>(data);
 
     auto seq_start = std::chrono::high_resolution_clock::now();
