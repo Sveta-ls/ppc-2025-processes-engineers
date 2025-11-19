@@ -50,7 +50,8 @@ bool ZyazevaSVecDotProduct::RunImpl() {
   const size_t start_index =
       (static_cast<size_t>(rank) * chunk_size) + std::min(static_cast<size_t>(rank), remaining_elements);
 
-  const bool needs_more_element = (static_cast<int>(remaining_elements) > rank);
+  const bool needs_more_element = (remaining_elements > static_cast<size_t>(rank));
+
   const size_t end_index = start_index + chunk_size + (needs_more_element ? 1UL : 0UL);
 
   int64_t local_dot_product = 0;
