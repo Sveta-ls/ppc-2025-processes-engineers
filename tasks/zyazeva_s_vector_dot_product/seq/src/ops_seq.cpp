@@ -23,7 +23,11 @@ bool ZyazevaSVecDotProductSEQ::ValidationImpl() {
   if (input[0].size() != input[1].size()) {
     return false;
   }
-  return !input[0].empty();
+  if ((input[0].size() == 0) | (input[1].size() == 0)) {
+    GetOutput() = 0;
+    return true;
+  }
+  return true;
 }
 
 bool ZyazevaSVecDotProductSEQ::PreProcessingImpl() {
