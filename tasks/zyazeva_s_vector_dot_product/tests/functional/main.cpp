@@ -136,7 +136,7 @@ TEST_P(ZyazevaRunFuncTestsMPI, DotProductTestMPI) {
 }
 
 const std::array<TestType, 5> kTestParam = {std::make_tuple(0, "simple_vectors"), std::make_tuple(1, "single_element"),
-                                            std::make_tuple(2, "all_equal"), std::make_tuple(3, "large_values"), 
+                                            std::make_tuple(2, "all_equal"), std::make_tuple(3, "large_values"),
                                             std::make_tuple(4, "empty_vectors")};
 
 const auto kTestTasksListSEQ =
