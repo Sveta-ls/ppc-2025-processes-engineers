@@ -30,8 +30,7 @@ std::vector<std::vector<int>> LoadVectorsFromFile(const std::string &filename) {
   int line_count = 0;
 
   while (std::getline(file, line)) {
-    std::replace(line.begin(), line.end(), ',', ' ');
-
+    std::ranges::replace(line, ',', ' ');
     std::istringstream iss(line);
     std::vector<int> vec;
     int value = 0;
