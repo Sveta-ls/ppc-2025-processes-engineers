@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 #include "zyazeva_s_vector_dot_product/common/include/common.hpp"
@@ -50,7 +51,7 @@ bool ZyazevaSVecDotProduct::RunImpl() {
   const size_t start_index =
       (static_cast<size_t>(rank) * chunk_size) + std::min(static_cast<size_t>(rank), remaining_elements);
 
-  const bool needs_more_element = (remaining_elements > static_cast<size_t>(rank));
+  const bool needs_more_element = std::cmp_greater(remaining_elements, rank);
 
   const size_t end_index = start_index + chunk_size + (needs_more_element ? 1UL : 0UL);
 
