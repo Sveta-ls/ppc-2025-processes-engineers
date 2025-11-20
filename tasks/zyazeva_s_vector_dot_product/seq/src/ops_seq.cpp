@@ -17,12 +17,6 @@ ZyazevaSVecDotProductSEQ::ZyazevaSVecDotProductSEQ(const InType &in) {
 
 bool ZyazevaSVecDotProductSEQ::ValidationImpl() {
   auto &input = GetInput();
-  if (input.size() != 2) {
-    return false;
-  }
-  if (input[0].size() != input[1].size()) {
-    return false;
-  }
   if ((input[0].empty()) || (input[1].empty())) {
     GetOutput() = 0;
     return true;
