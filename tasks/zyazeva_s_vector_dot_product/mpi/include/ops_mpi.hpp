@@ -17,6 +17,7 @@ class ZyazevaSVecDotProductMPI : public BaseTask {
 
   explicit ZyazevaSVecDotProductMPI(std::vector<std::vector<int>> input)
       : ppc::task::Task<std::vector<std::vector<int>>, int64_t>() {
+    SetTypeOfTask(GetStaticTypeOfTask());
     GetInput() = std::move(input);
   }
 
