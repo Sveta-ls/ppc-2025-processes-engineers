@@ -2,10 +2,8 @@
 
 #include <mpi.h>
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <utility>
 #include <vector>
 
 #include "zyazeva_s_vector_dot_product/common/include/common.hpp"
@@ -23,7 +21,8 @@ bool ZyazevaSVecDotProductMPI::PreProcessingImpl() {
 }
 
 bool ZyazevaSVecDotProductMPI::RunImpl() {
-  int rank = 0, size = 1;
+  int rank = 0;
+  int size = 1;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 

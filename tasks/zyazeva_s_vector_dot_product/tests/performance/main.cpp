@@ -2,12 +2,11 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <fstream>
 #include <sstream>
-#include <stdexcept>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "util/include/perf_test_util.hpp"
@@ -27,7 +26,7 @@ class ZyazevaSVectorDotProductPerfTestProcesses : public ppc::util::BaseRunPerfT
     input_data_ = LoadVectorsFromFile(kInputFilename_);
   }
 
-  InType LoadVectorsFromFile(const std::string &filename) {
+  static InType LoadVectorsFromFile(const std::string &filename) {
     std::vector<std::vector<int32_t>> vectors(2);
     std::ifstream file(filename);
 
@@ -71,10 +70,6 @@ class ZyazevaSVectorDotProductPerfTestProcesses : public ppc::util::BaseRunPerfT
     }
 
     bool result = static_cast<int64_t>(output_data) == expected_res;
-
-    if (!result) {
-      std::cout << "Validation failed: expected " << expected_res << ", got " << output_data << std::endl;
-    }
 
     return result;
   }
