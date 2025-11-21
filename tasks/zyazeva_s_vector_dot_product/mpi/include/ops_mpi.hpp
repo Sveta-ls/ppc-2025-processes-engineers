@@ -9,13 +9,13 @@
 
 namespace zyazeva_s_vector_dot_product {
 
-class ZyazevaSVecDotProduct : public BaseTask {
+class ZyazevaSVecDotProductMPI : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;
   }
 
-  explicit ZyazevaSVecDotProduct(std::vector<std::vector<int>> input)
+  explicit ZyazevaSVecDotProductMPI(std::vector<std::vector<int>> input)
       : ppc::task::Task<std::vector<std::vector<int>>, int64_t>() {
     GetInput() = std::move(input);
   }

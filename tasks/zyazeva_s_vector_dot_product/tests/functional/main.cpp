@@ -143,7 +143,7 @@ const auto kTestTasksListSEQ =
     ppc::util::AddFuncTask<ZyazevaSVecDotProductSEQ, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_vector_dot_product);
 
 const auto kTestTasksListMPI =
-    ppc::util::AddFuncTask<ZyazevaSVecDotProduct, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_vector_dot_product);
+    ppc::util::AddFuncTask<ZyazevaSVecDotProductMPI, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_vector_dot_product);
 
 const auto kGtestValuesSEQ = ppc::util::ExpandToValues(kTestTasksListSEQ);
 const auto kGtestValuesMPI = ppc::util::ExpandToValues(kTestTasksListMPI);

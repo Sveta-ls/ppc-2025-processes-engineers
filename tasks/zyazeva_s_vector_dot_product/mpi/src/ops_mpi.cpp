@@ -12,18 +12,18 @@
 
 namespace zyazeva_s_vector_dot_product {
 
-bool ZyazevaSVecDotProduct::ValidationImpl() {
+bool ZyazevaSVecDotProductMPI::ValidationImpl() {
   SetTypeOfTask(GetStaticTypeOfTask());
   const auto &input = GetInput();
   return input.size() == 2 && input[0].size() == input[1].size();
 }
 
-bool ZyazevaSVecDotProduct::PreProcessingImpl() {
+bool ZyazevaSVecDotProductMPI::PreProcessingImpl() {
   GetOutput() = 0;
   return true;
 }
 
-bool ZyazevaSVecDotProduct::RunImpl() {
+bool ZyazevaSVecDotProductMPI::RunImpl() {
   int rank = 0;
   int size = 1;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -73,7 +73,7 @@ bool ZyazevaSVecDotProduct::RunImpl() {
   return true;
 }
 
-bool ZyazevaSVecDotProduct::PostProcessingImpl() {
+bool ZyazevaSVecDotProductMPI::PostProcessingImpl() {
   return true;
 }
 

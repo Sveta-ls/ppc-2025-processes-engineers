@@ -79,7 +79,7 @@ TEST(SimplePerfTest, CompareBothVersions) {
 
     auto seq_duration = static_cast<double>(seq_time.count());
 
-    auto mpi_task = std::make_shared<ZyazevaSVecDotProduct>(data);
+    auto mpi_task = std::make_shared<ZyazevaSVecDotProductMPI>(data);
 
     double mpi_start = MPI_Wtime();
     mpi_task->Validation();
@@ -97,7 +97,7 @@ TEST(SimplePerfTest, CompareBothVersions) {
 
   } else {
     std::vector<std::vector<int>> mpi_data(2);
-    auto mpi_task = std::make_shared<ZyazevaSVecDotProduct>(mpi_data);
+    auto mpi_task = std::make_shared<ZyazevaSVecDotProductMPI>(mpi_data);
 
     mpi_task->Validation();
     mpi_task->PreProcessing();
