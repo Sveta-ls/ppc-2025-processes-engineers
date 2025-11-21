@@ -31,7 +31,7 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
   const auto &vector1 = input[0];
   const auto &vector2 = input[1];
 
-  if (vector1.empty() || vector2.empty() || vector1.size() != vector2.size()) {
+  if (vector1.empty() || vector2.empty()) {
     GetOutput() = 0;
     return true;
   }
