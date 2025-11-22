@@ -2,7 +2,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <iostream>
 #include <vector>
 
 #include "util/include/perf_test_util.hpp"
