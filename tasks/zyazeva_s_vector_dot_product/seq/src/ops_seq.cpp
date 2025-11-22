@@ -34,7 +34,7 @@ bool ZyazevaSVecDotProductSEQ::RunImpl() {
   auto &vec1 = input[0];
   auto &vec2 = input[1];
 
-  int dot_product = 0;
+  int64_t dot_product = 0;
 
   for (size_t i = 0; i < vec1.size(); i++) {
     dot_product += vec1[i] * vec2[i];

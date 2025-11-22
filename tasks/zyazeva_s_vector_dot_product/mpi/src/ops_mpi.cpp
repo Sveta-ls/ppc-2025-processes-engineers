@@ -26,8 +26,6 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  MPI_Barrier(MPI_COMM_WORLD);
-
   const auto &input = GetInput();
   const auto &vector1 = input[0];
   const auto &vector2 = input[1];

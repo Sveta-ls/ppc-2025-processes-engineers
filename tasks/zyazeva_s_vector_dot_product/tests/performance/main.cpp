@@ -23,7 +23,6 @@ class ZyazevaSVectorDotProductPerfTestProcesses : public ppc::util::BaseRunPerfT
 
   void SetUp() override {
     input_data_ = LoadVectorsFromFile(kInputFilename_);
-    input_data_ = LoadVectorsFromFile(kInputFilename_);
   }
 
   static InType LoadVectorsFromFile(const std::string &filename) {
