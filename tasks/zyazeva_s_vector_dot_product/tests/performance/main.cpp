@@ -1,12 +1,8 @@
 #include <gtest/gtest.h>
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <fstream>
-#include <sstream>
-#include <string>
+#include <iostream>
 #include <vector>
 
 #include "util/include/perf_test_util.hpp"
@@ -29,8 +25,8 @@ class ZyazevaSVectorDotProductPerfTestProcesses : public ppc::util::BaseRunPerfT
     vectors[1].resize(size);
 
     for (size_t i = 0; i < size; ++i) {
-      vectors[0][i] = 1 + (i % 100);
-      vectors[1][i] = 1 + ((i * 7) % 100);
+      vectors[0][i] = static_cast<int32_t>(1 + (i % 100));
+      vectors[1][i] = static_cast<int32_t>(1 + ((i * 7) % 100));
     }
 
     return vectors;
