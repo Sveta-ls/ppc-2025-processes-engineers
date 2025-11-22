@@ -1,6 +1,7 @@
 #include "zyazeva_s_vector_dot_product/seq/include/ops_seq.hpp"
 
 #include <cstddef>
+#include <cstdint>
 #include <utility>
 #include <vector>
 
@@ -37,7 +38,7 @@ bool ZyazevaSVecDotProductSEQ::RunImpl() {
   int64_t dot_product = 0;
 
   for (size_t i = 0; i < vec1.size(); i++) {
-    dot_product += vec1[i] * vec2[i];
+    dot_product += static_cast<int64_t>(vec1[i]) * static_cast<int64_t>(vec2[i]);
   }
 
   GetOutput() = dot_product;

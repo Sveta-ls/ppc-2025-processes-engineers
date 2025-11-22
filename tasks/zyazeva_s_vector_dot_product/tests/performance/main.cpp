@@ -17,45 +17,22 @@
 namespace zyazeva_s_vector_dot_product {
 
 class ZyazevaSVectorDotProductPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  const std::string kInputFilename_ =
-      "/workspaces/ppc-2025-processes-engineers-1/tasks/zyazeva_s_vector_dot_product/data/input.txt";
   InType input_data_;
 
   void SetUp() override {
-    input_data_ = LoadVectorsFromFile(kInputFilename_);
+    input_data_ = GenerateLargeVectors(25000000);
   }
 
-  static InType LoadVectorsFromFile(const std::string &filename) {
+  static InType GenerateLargeVectors(size_t size) {
     std::vector<std::vector<int32_t>> vectors(2);
-    std::ifstream file(filename);
+    vectors[0].resize(size);
+    vectors[1].resize(size);
 
-    if (!file.is_open()) {
-      return vectors;
+    for (size_t i = 0; i < size; ++i) {
+      vectors[0][i] = 1 + (i % 100);
+      vectors[1][i] = 1 + ((i * 7) % 100);
     }
 
-    std::string line;
-    int line_count = 0;
-
-    while (std::getline(file, line)) {
-      std::ranges::replace(line, ',', ' ');
-      std::istringstream iss(line);
-      std::vector<int32_t> vec;
-      int32_t value = 0;
-
-      while (iss >> value) {
-        vec.push_back(value);
-      }
-
-      if (line_count < 2) {
-        vectors[line_count] = vec;
-      } else {
-        break;
-      }
-
-      line_count++;
-    }
-
-    file.close();
     return vectors;
   }
 
