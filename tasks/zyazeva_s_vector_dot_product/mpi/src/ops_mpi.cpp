@@ -3,7 +3,6 @@
 #include <mpi.h>
 
 #include <algorithm>
-#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -34,6 +33,11 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
   }
   MPI_Bcast(&total_elements, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
+  if (total_elements == 0) {
+    GetOutput() = 0;
+    return true;
+  }
+
   int chunk_size = total_elements / size;
   int start = rank * chunk_size;
   int end = (rank == size - 1) ? total_elements : start + chunk_size;
@@ -55,12 +59,12 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
       int i_end = (i == size - 1) ? total_elements : i_start + chunk_size;
       int i_size = i_end - i_start;
 
-      MPI_Send(vector1_full.data() + i_start, i_size, MPI_INT32_T, i, 0, MPI_COMM_WORLD);
-      MPI_Send(vector2_full.data() + i_start, i_size, MPI_INT32_T, i, 1, MPI_COMM_WORLD);
+      MPI_Send(vector1_full.data() + i_start, i_size, MPI_INT, i, 0, MPI_COMM_WORLD);
+      MPI_Send(vector2_full.data() + i_start, i_size, MPI_INT, i, 1, MPI_COMM_WORLD);
     }
   } else {
-    MPI_Recv(local_vector1.data(), local_size, MPI_INT32_T, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Recv(local_vector2.data(), local_size, MPI_INT32_T, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(local_vector1.data(), local_size, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(local_vector2.data(), local_size, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   }
 
   int64_t local_dot_product = 0;
