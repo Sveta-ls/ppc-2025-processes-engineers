@@ -99,6 +99,18 @@ class ZyazevaRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, int64_
         input_data_ = {{}, {}};
         expected_output_ = 0;
         break;
+      case 5:
+        input_data_ = {{1, 2, 3}};
+        expected_output_ = 0; 
+        break;
+      case 6:
+        input_data_ = {};
+        expected_output_ = 0; 
+        break;
+      case 7:
+        input_data_ = {{1, 2, 3}, {4, 5}};
+        expected_output_ = 0;  
+        break;
       default:
         input_data_ = {{1, 2}, {3, 4}};
         expected_output_ = 11;
@@ -135,9 +147,10 @@ TEST_P(ZyazevaRunFuncTestsMPI, DotProductTestMPI) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 5> kTestParam = {std::make_tuple(0, "simple_vectors"), std::make_tuple(1, "single_element"),
+const std::array<TestType, 8> kTestParam = {std::make_tuple(0, "simple_vectors"), std::make_tuple(1, "single_element"),
                                             std::make_tuple(2, "all_equal"), std::make_tuple(3, "large_values"),
-                                            std::make_tuple(4, "empty_vectors")};
+                                            std::make_tuple(4, "empty_vectors"), std::make_tuple(5, "one_vector"),
+                                            std::make_tuple(6, "nothing"), std::make_tuple(7, "different_lenght")};
 
 const auto kTestTasksListSEQ =
     ppc::util::AddFuncTask<ZyazevaSVecDotProductSEQ, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_vector_dot_product);

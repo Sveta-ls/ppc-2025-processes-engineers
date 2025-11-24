@@ -13,36 +13,33 @@ namespace zyazeva_s_vector_dot_product {
 
 class ZyazevaSVectorDotProductPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
   InType input_data_;
+  int64_t expected_result_ = 0;
 
   void SetUp() override {
-    input_data_ = GenerateLargeVectors(25000000);
+    auto result = GenerateLargeVectorsWithResult(25000000);
+    input_data_ = result.first;
+    expected_result_ = result.second;
   }
 
-  static InType GenerateLargeVectors(size_t size) {
+  static std::pair<InType, int64_t> GenerateLargeVectorsWithResult(size_t size) {
     std::vector<std::vector<int32_t>> vectors(2);
     vectors[0].resize(size);
     vectors[1].resize(size);
+    int64_t dot_product = 0;
 
     for (size_t i = 0; i < size; ++i) {
-      vectors[0][i] = static_cast<int32_t>(1 + (i % 100));
-      vectors[1][i] = static_cast<int32_t>(1 + ((i * 7) % 100));
+      int32_t a = static_cast<int32_t>(1 + (i % 100));
+      int32_t b = static_cast<int32_t>(1 + ((i * 7) % 100));
+      vectors[0][i] = a;
+      vectors[1][i] = b;
+      dot_product += static_cast<int64_t>(a) * static_cast<int64_t>(b);
     }
 
-    return vectors;
+    return std::make_pair(vectors, dot_product);
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    int64_t expected_res = 0;
-    const auto &left_vec = input_data_[0];
-    const auto &right_vec = input_data_[1];
-
-    for (size_t i = 0; i < left_vec.size(); i++) {
-      expected_res += static_cast<int64_t>(left_vec[i]) * static_cast<int64_t>(right_vec[i]);
-    }
-
-    bool result = static_cast<int64_t>(output_data) == expected_res;
-
-    return result;
+    return static_cast<int64_t>(output_data) == expected_result_;
   }
 
   InType GetTestInputData() final {
