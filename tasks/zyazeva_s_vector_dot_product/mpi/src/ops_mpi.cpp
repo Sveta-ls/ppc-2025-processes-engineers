@@ -13,21 +13,20 @@ namespace zyazeva_s_vector_dot_product {
 bool ZyazevaSVecDotProductMPI::ValidationImpl() {
   int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  
+
   bool is_valid = false;
-  
+
   if (rank == 0) {
     const auto &input = GetInput();
     if (input.size() == 2) {
       is_valid = true;
-    }
-    else if (input.size() < 2) {
+    } else if (input.size() < 2) {
       is_valid = true;
     }
   }
-  
+
   MPI_Bcast(&is_valid, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
-  
+
   return is_valid;
 }
 
@@ -47,11 +46,11 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
     const auto &input = GetInput();
     if (input.size() < 2) {
       GetOutput() = 0;
-      total_elements = -1; 
+      total_elements = -1;
     } else {
-      const auto& vector1 = input[0];
-      const auto& vector2 = input[1];
-      
+      const auto &vector1 = input[0];
+      const auto &vector2 = input[1];
+
       if (vector1.size() != vector2.size() || vector1.empty() || vector2.empty()) {
         GetOutput() = 0;
         total_elements = -1;
@@ -64,21 +63,25 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
   MPI_Bcast(&total_elements, 1, MPI_INT64_T, 0, MPI_COMM_WORLD);
 
   if (total_elements == -1) {
-    if (rank != 0) GetOutput() = 0;
+    if (rank != 0) {
+      GetOutput() = 0;
+    }
     return true;
   }
 
   if (total_elements == 0) {
-    if (rank != 0) GetOutput() = 0;
+    if (rank != 0) {
+      GetOutput() = 0;
+    }
     return true;
   }
 
   int64_t base_chunk_size = total_elements / size;
   int64_t remainder = total_elements % size;
-  
+
   int64_t local_size = base_chunk_size + (rank < remainder ? 1 : 0);
   int64_t start = 0;
-  
+
   if (rank < remainder) {
     start = rank * (base_chunk_size + 1);
   } else {
@@ -99,7 +102,7 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
     for (int i = 1; i < size; i++) {
       int64_t i_local_size = base_chunk_size + (i < remainder ? 1 : 0);
       int64_t i_start = 0;
-      
+
       if (i < remainder) {
         i_start = i * (base_chunk_size + 1);
       } else {
