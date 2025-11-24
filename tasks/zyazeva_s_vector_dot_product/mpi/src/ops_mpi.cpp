@@ -2,6 +2,7 @@
 
 #include <mpi.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -29,16 +30,17 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
   int total_elements = 0;
   if (rank == 0) {
     const auto &input = GetInput();
-    total_elements = input[0].size();
+    total_elements = static_cast<int>(input[0].size());
   }
   MPI_Bcast(&total_elements, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-  size_t chunk_size = total_elements / size;
-  size_t start = rank * chunk_size;
-  size_t end = (rank == size - 1) ? total_elements : start + chunk_size;
-  size_t local_size = end - start;
+  int chunk_size = total_elements / size;
+  int start = rank * chunk_size;
+  int end = (rank == size - 1) ? total_elements : start + chunk_size;
+  int local_size = end - start;
 
-  std::vector<int32_t> local_vector1(local_size), local_vector2(local_size);
+  std::vector<int32_t> local_vector1(local_size);
+  std::vector<int32_t> local_vector2(local_size);
 
   if (rank == 0) {
     const auto &input = GetInput();
@@ -49,9 +51,9 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
     std::copy(vector2_full.begin() + start, vector2_full.begin() + end, local_vector2.begin());
 
     for (int i = 1; i < size; i++) {
-      size_t i_start = i * chunk_size;
-      size_t i_end = (i == size - 1) ? total_elements : i_start + chunk_size;
-      size_t i_size = i_end - i_start;
+      int i_start = i * chunk_size;
+      int i_end = (i == size - 1) ? total_elements : i_start + chunk_size;
+      int i_size = i_end - i_start;
 
       MPI_Send(vector1_full.data() + i_start, i_size, MPI_INT32_T, i, 0, MPI_COMM_WORLD);
       MPI_Send(vector2_full.data() + i_start, i_size, MPI_INT32_T, i, 1, MPI_COMM_WORLD);
@@ -62,7 +64,7 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
   }
 
   int64_t local_dot_product = 0;
-  for (size_t i = 0; i < local_size; ++i) {
+  for (int i = 0; i < local_size; ++i) {
     local_dot_product += static_cast<int64_t>(local_vector1[i]) * static_cast<int64_t>(local_vector2[i]);
   }
 
