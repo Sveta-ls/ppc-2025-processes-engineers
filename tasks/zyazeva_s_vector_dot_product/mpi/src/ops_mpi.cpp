@@ -26,24 +26,44 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  const auto &input = GetInput();
-  const auto &vector1 = input[0];
-  const auto &vector2 = input[1];
-
-  if (vector1.empty() || vector2.empty()) {
-    GetOutput() = 0;
-    return true;
+  int total_elements = 0;
+  if (rank == 0) {
+    const auto &input = GetInput();
+    total_elements = input[0].size();
   }
-
-  const size_t total_elements = vector1.size();
+  MPI_Bcast(&total_elements, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
   size_t chunk_size = total_elements / size;
   size_t start = rank * chunk_size;
   size_t end = (rank == size - 1) ? total_elements : start + chunk_size;
+  size_t local_size = end - start;
+
+  std::vector<int32_t> local_vector1(local_size), local_vector2(local_size);
+
+  if (rank == 0) {
+    const auto &input = GetInput();
+    const auto &vector1_full = input[0];
+    const auto &vector2_full = input[1];
+
+    std::copy(vector1_full.begin() + start, vector1_full.begin() + end, local_vector1.begin());
+    std::copy(vector2_full.begin() + start, vector2_full.begin() + end, local_vector2.begin());
+
+    for (int i = 1; i < size; i++) {
+      size_t i_start = i * chunk_size;
+      size_t i_end = (i == size - 1) ? total_elements : i_start + chunk_size;
+      size_t i_size = i_end - i_start;
+
+      MPI_Send(vector1_full.data() + i_start, i_size, MPI_INT32_T, i, 0, MPI_COMM_WORLD);
+      MPI_Send(vector2_full.data() + i_start, i_size, MPI_INT32_T, i, 1, MPI_COMM_WORLD);
+    }
+  } else {
+    MPI_Recv(local_vector1.data(), local_size, MPI_INT32_T, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(local_vector2.data(), local_size, MPI_INT32_T, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  }
 
   int64_t local_dot_product = 0;
-  for (size_t i = start; i < end; ++i) {
-    local_dot_product += static_cast<int64_t>(vector1[i]) * static_cast<int64_t>(vector2[i]);
+  for (size_t i = 0; i < local_size; ++i) {
+    local_dot_product += static_cast<int64_t>(local_vector1[i]) * static_cast<int64_t>(local_vector2[i]);
   }
 
   int64_t global_dot_product = 0;
