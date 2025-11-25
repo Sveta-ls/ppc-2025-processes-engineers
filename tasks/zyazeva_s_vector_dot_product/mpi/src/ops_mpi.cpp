@@ -10,26 +10,8 @@
 
 namespace zyazeva_s_vector_dot_product {
 
-bool ZyazevaSVecDotProductMPI::ValidationImpl() {
-  int rank = 0;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-  bool is_valid = false;
-
-  if (rank == 0) {
-    is_valid = true;
-  }
-
-  MPI_Bcast(&is_valid, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
-  return is_valid;
-}
-
-bool ZyazevaSVecDotProductMPI::PreProcessingImpl() {
-  GetOutput() = 0;
-  return true;
-}
-
-static bool CheckInputValid(const std::vector<std::vector<int32_t>> &input, int64_t &total_elements) {
+namespace {
+bool CheckInputValid(const std::vector<std::vector<int32_t>> &input, int64_t &total_elements) {
   if (input.size() < 2) {
     return false;
   }
@@ -48,7 +30,7 @@ static bool CheckInputValid(const std::vector<std::vector<int32_t>> &input, int6
   return true;
 }
 
-static void CalculateChunkParams(int rank, int size, int64_t total_elements, int64_t &local_size, int64_t &start) {
+void CalculateChunkParams(int rank, int size, int64_t total_elements, int64_t &local_size, int64_t &start) {
   const int64_t base_chunk_size = total_elements / size;
   const int64_t remainder = total_elements % size;
 
@@ -59,6 +41,27 @@ static void CalculateChunkParams(int rank, int size, int64_t total_elements, int
   } else {
     start = (remainder * (base_chunk_size + 1)) + ((rank - remainder) * base_chunk_size);
   }
+}
+
+}  // namespace
+
+bool ZyazevaSVecDotProductMPI::ValidationImpl() {
+  int rank = 0;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  bool is_valid = false;
+
+  if (rank == 0) {
+    is_valid = true;
+  }
+
+  MPI_Bcast(&is_valid, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
+  return is_valid;
+}
+
+bool ZyazevaSVecDotProductMPI::PreProcessingImpl() {
+  GetOutput() = 0;
+  return true;
 }
 
 bool ZyazevaSVecDotProductMPI::RunImpl() {
