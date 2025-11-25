@@ -3,7 +3,6 @@
 #include <mpi.h>
 
 #include <algorithm>
-#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -14,22 +13,20 @@ namespace zyazeva_s_vector_dot_product {
 bool ZyazevaSVecDotProductMPI::ValidationImpl() {
   int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  
+
   bool is_valid = false;
-  
+
   if (rank == 0) {
     const auto &input = GetInput();
-    
-    if (input.size() >= 2) {
-      const auto& vector1 = input[0];
-      const auto& vector2 = input[1];
-      is_valid = (vector1.size() == vector2.size()) && !vector1.empty() && !vector2.empty();
-    } else {
+    if (input.size() == 2) {
+      is_valid = true;
+    } else if (input.size() != 2) {
       is_valid = true;
     }
   }
+
   MPI_Bcast(&is_valid, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
-  
+
   return is_valid;
 }
 
@@ -47,14 +44,14 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
   int64_t total_elements = 0;
   if (rank == 0) {
     const auto &input = GetInput();
-    
+
     if (input.size() < 2) {
       GetOutput() = 0;
-      total_elements = -1; 
+      total_elements = -1;
     } else {
-      const auto& vector1 = input[0];
-      const auto& vector2 = input[1];
-      
+      const auto &vector1 = input[0];
+      const auto &vector2 = input[1];
+
       if (vector1.size() != vector2.size() || vector1.empty() || vector2.empty()) {
         GetOutput() = 0;
         total_elements = -1;
@@ -64,36 +61,33 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
     }
   }
 
-<<<<<<< HEAD
   MPI_Bcast(&total_elements, 1, MPI_INT64_T, 0, MPI_COMM_WORLD);
 
   if (total_elements == -1) {
-    if (rank != 0) GetOutput() = 0;
+    if (rank != 0) {
+      GetOutput() = 0;
+    }
     return true;
   }
 
   if (total_elements == 0) {
-    if (rank != 0) GetOutput() = 0;
+    if (rank != 0) {
+      GetOutput() = 0;
+    }
     return true;
   }
 
   int64_t base_chunk_size = total_elements / size;
   int64_t remainder = total_elements % size;
-  
+
   int64_t local_size = base_chunk_size + (rank < remainder ? 1 : 0);
   int64_t start = 0;
-  
+
   if (rank < remainder) {
     start = rank * (base_chunk_size + 1);
   } else {
     start = remainder * (base_chunk_size + 1) + (rank - remainder) * base_chunk_size;
   }
-=======
-  int chunk_size = total_elements / size;
-  int start = rank * chunk_size;
-  int end = (rank == size - 1) ? total_elements : start + chunk_size;
-  int local_size = end - start;
->>>>>>> parent of d2a902d (fixed clang-tigy2)
 
   std::vector<int32_t> local_vector1(local_size);
   std::vector<int32_t> local_vector2(local_size);
@@ -107,33 +101,26 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
     std::copy(vector2_full.begin() + start, vector2_full.begin() + start + local_size, local_vector2.begin());
 
     for (int i = 1; i < size; i++) {
-<<<<<<< HEAD
       int64_t i_local_size = base_chunk_size + (i < remainder ? 1 : 0);
       int64_t i_start = 0;
-      
+
       if (i < remainder) {
         i_start = i * (base_chunk_size + 1);
       } else {
         i_start = remainder * (base_chunk_size + 1) + (i - remainder) * base_chunk_size;
       }
+
       MPI_Send(vector1_full.data() + i_start, static_cast<int>(i_local_size), MPI_INT, i, 0, MPI_COMM_WORLD);
       MPI_Send(vector2_full.data() + i_start, static_cast<int>(i_local_size), MPI_INT, i, 1, MPI_COMM_WORLD);
     }
   } else {
+    if (local_size > INT_MAX) {
+      GetOutput() = 0;
+      return true;
+    }
+
     MPI_Recv(local_vector1.data(), static_cast<int>(local_size), MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     MPI_Recv(local_vector2.data(), static_cast<int>(local_size), MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-=======
-      int i_start = i * chunk_size;
-      int i_end = (i == size - 1) ? total_elements : i_start + chunk_size;
-      int i_size = i_end - i_start;
-
-      MPI_Send(vector1_full.data() + i_start, i_size, MPI_INT32_T, i, 0, MPI_COMM_WORLD);
-      MPI_Send(vector2_full.data() + i_start, i_size, MPI_INT32_T, i, 1, MPI_COMM_WORLD);
-    }
-  } else {
-    MPI_Recv(local_vector1.data(), local_size, MPI_INT32_T, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Recv(local_vector2.data(), local_size, MPI_INT32_T, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
->>>>>>> parent of d2a902d (fixed clang-tigy2)
   }
 
   int64_t local_dot_product = 0;
