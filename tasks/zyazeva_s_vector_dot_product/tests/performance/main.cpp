@@ -44,7 +44,7 @@ class ZyazevaSVectorDotProductPerfTestProcesses : public ppc::util::BaseRunPerfT
   }
 
   InType GetTestInputData() final {
-    return input_data_;  // 1
+    return input_data_;
   }
 };
 

@@ -47,6 +47,14 @@ class ZyazevaRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, int64_
         input_data_ = {{}, {}};
         expected_output_ = 0;
         break;
+      case 5:
+        input_data_ = {{1, 2, 3}};
+        expected_output_ = 0;
+        break;
+      case 6:
+        input_data_ = {{1, 2, 3}, {4, 5}};
+        expected_output_ = 0;
+        break;
       default:
         input_data_ = {{1, 2}, {3, 4}};
         expected_output_ = 11;

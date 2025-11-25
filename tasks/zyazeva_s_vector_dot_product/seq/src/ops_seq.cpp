@@ -9,6 +9,26 @@
 
 namespace zyazeva_s_vector_dot_product {
 
+namespace {
+bool CheckInputValid(const std::vector<std::vector<int32_t>> &input) {
+  if (input.size() < 2) {
+    return false;
+  }
+
+  const auto &vector1 = input[0];
+  const auto &vector2 = input[1];
+
+  if (vector1.size() != vector2.size()) {
+    return false;
+  }
+  if (vector1.empty() || vector2.empty()) {
+    return false;
+  }
+
+  return true;
+}
+}  // namespace
+
 ZyazevaSVecDotProductSEQ::ZyazevaSVecDotProductSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   InType temp = in;
@@ -34,6 +54,10 @@ bool ZyazevaSVecDotProductSEQ::RunImpl() {
   auto &input = GetInput();
   auto &vec1 = input[0];
   auto &vec2 = input[1];
+  if (!CheckInputValid(input)) {
+    GetOutput() = 0;
+    return true;
+  }
 
   int64_t dot_product = 0;
 
