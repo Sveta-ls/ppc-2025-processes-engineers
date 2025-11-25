@@ -29,8 +29,8 @@ class ZyazevaSVectorDotProductPerfTestProcesses : public ppc::util::BaseRunPerfT
     int64_t dot_product = 0;
 
     for (size_t i = 0; i < size; ++i) {
-      int32_t a = static_cast<int32_t>(1 + (i % 100));
-      int32_t b = static_cast<int32_t>(1 + ((i * 7) % 100));
+      auto a = static_cast<int32_t>(1 + (i % 100));
+      auto b = static_cast<int32_t>(1 + ((i * 7) % 100));
       vectors[0][i] = a;
       vectors[1][i] = b;
       dot_product += static_cast<int64_t>(a) * static_cast<int64_t>(b);

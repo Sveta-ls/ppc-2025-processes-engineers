@@ -29,6 +29,38 @@ bool ZyazevaSVecDotProductMPI::PreProcessingImpl() {
   return true;
 }
 
+static bool CheckInputValid(const std::vector<std::vector<int32_t>> &input, int64_t &total_elements) {
+  if (input.size() < 2) {
+    return false;
+  }
+
+  const auto &vector1 = input[0];
+  const auto &vector2 = input[1];
+
+  if (vector1.size() != vector2.size()) {
+    return false;
+  }
+  if (vector1.empty() || vector2.empty()) {
+    return false;
+  }
+
+  total_elements = static_cast<int64_t>(vector1.size());
+  return true;
+}
+
+static void CalculateChunkParams(int rank, int size, int64_t total_elements, int64_t &local_size, int64_t &start) {
+  const int64_t base_chunk_size = total_elements / size;
+  const int64_t remainder = total_elements % size;
+
+  local_size = base_chunk_size + (rank < remainder ? 1 : 0);
+
+  if (rank < remainder) {
+    start = rank * (base_chunk_size + 1);
+  } else {
+    start = (remainder * (base_chunk_size + 1)) + ((rank - remainder) * base_chunk_size);
+  }
+}
+
 bool ZyazevaSVecDotProductMPI::RunImpl() {
   int rank = 0;
   int size = 1;
@@ -36,21 +68,11 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   int64_t total_elements = 0;
-  bool error_handling = true;  // avoiding ifs
+  bool error_handling = true;
 
   if (rank == 0) {
     const auto &input = GetInput();
-
-    error_handling = (input.size() >= 2);
-    if (error_handling) {
-      const auto &vector1 = input[0];
-      const auto &vector2 = input[1];
-      error_handling = (vector1.size() == vector2.size()) && !vector1.empty() && !vector2.empty();
-      if (error_handling) {
-        total_elements = static_cast<int64_t>(vector1.size());
-      }
-    }
-
+    error_handling = CheckInputValid(input, total_elements);
     if (!error_handling) {
       GetOutput() = 0;
     }
@@ -68,16 +90,9 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
 
   MPI_Bcast(&total_elements, 1, MPI_INT64_T, 0, MPI_COMM_WORLD);
 
-  const int64_t base_chunk_size = total_elements / size;
-  const int64_t remainder = total_elements % size;
-  const int64_t local_size = base_chunk_size + (rank < remainder ? 1 : 0);
-
+  int64_t local_size = 0;
   int64_t start = 0;
-  if (rank < remainder) {
-    start = rank * (base_chunk_size + 1);
-  } else {
-    start = (remainder * (base_chunk_size + 1)) + ((rank - remainder) * base_chunk_size);
-  }
+  CalculateChunkParams(rank, size, total_elements, local_size, start);
 
   std::vector<int32_t> local_vector1(local_size);
   std::vector<int32_t> local_vector2(local_size);
@@ -91,14 +106,9 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
     std::copy(vector2_full.begin() + start, vector2_full.begin() + start + local_size, local_vector2.begin());
 
     for (int i = 1; i < size; i++) {
-      const int64_t i_local_size = base_chunk_size + (i < remainder ? 1 : 0);
+      int64_t i_local_size = 0;
       int64_t i_start = 0;
-
-      if (i < remainder) {
-        i_start = i * (base_chunk_size + 1);
-      } else {
-        i_start = (remainder * (base_chunk_size + 1)) + ((i - remainder) * base_chunk_size);
-      }
+      CalculateChunkParams(i, size, total_elements, i_local_size, i_start);
 
       MPI_Send(vector1_full.data() + i_start, static_cast<int>(i_local_size), MPI_INT, i, 0, MPI_COMM_WORLD);
       MPI_Send(vector2_full.data() + i_start, static_cast<int>(i_local_size), MPI_INT, i, 1, MPI_COMM_WORLD);
