@@ -97,16 +97,15 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
   int64_t start = 0;
   CalculateChunkParams(rank, size, total_elements, local_size, start);
 
-  std::vector<int32_t> local_vector1(local_size);
-  std::vector<int32_t> local_vector2(local_size);
-
+  int64_t local_dot_product = 0;
   if (rank == 0) {
     const auto &input = GetInput();
     const auto &vector1_full = input[0];
     const auto &vector2_full = input[1];
 
-    std::copy(vector1_full.begin() + start, vector1_full.begin() + start + local_size, local_vector1.begin());
-    std::copy(vector2_full.begin() + start, vector2_full.begin() + start + local_size, local_vector2.begin());
+    for (int64_t i = start; i < start + local_size; ++i) {
+      local_dot_product += static_cast<int64_t>(vector1_full[i]) * static_cast<int64_t>(vector2_full[i]);
+    }
 
     for (int i = 1; i < size; i++) {
       int64_t i_local_size = 0;
@@ -117,13 +116,14 @@ bool ZyazevaSVecDotProductMPI::RunImpl() {
       MPI_Send(vector2_full.data() + i_start, static_cast<int>(i_local_size), MPI_INT, i, 1, MPI_COMM_WORLD);
     }
   } else {
+    std::vector<int32_t> local_vector1(local_size);
+    std::vector<int32_t> local_vector2(local_size);
+
     MPI_Recv(local_vector1.data(), static_cast<int>(local_size), MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     MPI_Recv(local_vector2.data(), static_cast<int>(local_size), MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-  }
-
-  int64_t local_dot_product = 0;
-  for (int64_t i = 0; i < local_size; ++i) {
-    local_dot_product += static_cast<int64_t>(local_vector1[i]) * static_cast<int64_t>(local_vector2[i]);
+    for (int64_t i = 0; i < local_size; ++i) {
+      local_dot_product += static_cast<int64_t>(local_vector1[i]) * static_cast<int64_t>(local_vector2[i]);
+    }
   }
 
   int64_t global_dot_product = 0;

@@ -17,7 +17,7 @@ class ZyazevaSVectorDotProductPerfTestProcesses : public ppc::util::BaseRunPerfT
   int64_t expected_result_ = 0;
 
   void SetUp() override {
-    auto result = GenerateLargeVectorsWithResult(25000000);
+    auto result = GenerateLargeVectorsWithResult(60000000);
     input_data_ = result.first;
     expected_result_ = result.second;
   }
