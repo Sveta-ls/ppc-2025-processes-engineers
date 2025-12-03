@@ -1,16 +1,16 @@
 #pragma once
 
-#include "zyazeva_s_vector_dot_product/common/include/common.hpp"
+#include "zyazeva_s_gauss_jordan_elimination/common/include/common.hpp"
 #include "task/include/task.hpp"
 
-namespace zyazeva_s_vector_dot_product {
+namespace zyazeva_s_gauss_jordan_elimination {
 
-class NesterovATestTaskMPI : public BaseTask {
+class ZyazevaSGaussJordanEiMPI : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;
   }
-  explicit NesterovATestTaskMPI(const InType &in);
+  explicit ZyazevaSGaussJordanEiMPI(const InType &in);
 
  private:
   bool ValidationImpl() override;
@@ -19,4 +19,4 @@ class NesterovATestTaskMPI : public BaseTask {
   bool PostProcessingImpl() override;
 };
 
-}  // namespace zyazeva_s_vector_dot_product
+}  // namespace zyazeva_s_gauss_jordan_elimination

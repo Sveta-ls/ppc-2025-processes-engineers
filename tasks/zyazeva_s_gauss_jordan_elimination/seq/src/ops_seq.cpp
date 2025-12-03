@@ -1,29 +1,29 @@
-#include "zyazeva_s_vector_dot_product/seq/include/ops_seq.hpp"
+#include "zyazeva_s_gauss_jordan_elimination/seq/include/ops_seq.hpp"
 
 #include <numeric>
 #include <vector>
 
-#include "zyazeva_s_vector_dot_product/common/include/common.hpp"
+#include "zyazeva_s_gauss_jordan_elimination/common/include/common.hpp"
 #include "util/include/util.hpp"
 
-namespace zyazeva_s_vector_dot_product {
+namespace zyazeva_s_gauss_jordan_elimination {
 
-NesterovATestTaskSEQ::NesterovATestTaskSEQ(const InType &in) {
+ZyazevaSGaussJordanEiSEQ::ZyazevaSGaussJordanEiSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = 0;
 }
 
-bool NesterovATestTaskSEQ::ValidationImpl() {
+bool ZyazevaSGaussJordanEiSEQ::ValidationImpl() {
   return (GetInput() > 0) && (GetOutput() == 0);
 }
 
-bool NesterovATestTaskSEQ::PreProcessingImpl() {
+bool ZyazevaSGaussJordanEiSEQ::PreProcessingImpl() {
   GetOutput() = 2 * GetInput();
   return GetOutput() > 0;
 }
 
-bool NesterovATestTaskSEQ::RunImpl() {
+bool ZyazevaSGaussJordanEiSEQ::RunImpl() {
   if (GetInput() == 0) {
     return false;
   }
@@ -52,9 +52,9 @@ bool NesterovATestTaskSEQ::RunImpl() {
   return GetOutput() > 0;
 }
 
-bool NesterovATestTaskSEQ::PostProcessingImpl() {
+bool ZyazevaSGaussJordanEiSEQ::PostProcessingImpl() {
   GetOutput() -= GetInput();
   return GetOutput() > 0;
 }
 
-}  // namespace zyazeva_s_vector_dot_product
+}  // namespace zyazeva_s_gauss_jordan_elimination
