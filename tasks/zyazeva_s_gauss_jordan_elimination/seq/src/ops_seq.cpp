@@ -13,7 +13,8 @@ namespace zyazeva_s_gauss_jordan_elimination {
 
 ZyazevaSGaussJordanElSEQ::ZyazevaSGaussJordanElSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
-  GetInput() = in;
+  InType temp = in;
+  GetInput() = std::move(temp);
   GetOutput() = std::vector<float>();
 }
 
