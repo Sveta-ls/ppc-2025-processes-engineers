@@ -9,7 +9,7 @@
 
 namespace zyazeva_s_gauss_jordan_elimination {
 
-ZyazevaSGaussJordanElMPI::ZyazevaSGaussJordanElMPI(const InType& in) {
+ZyazevaSGaussJordanElMPI::ZyazevaSGaussJordanElMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
 }
@@ -21,7 +21,7 @@ bool ZyazevaSGaussJordanElMPI::ValidationImpl() {
   bool is_valid = false;
 
   if (rank == 0) {
-    const auto& matrix = GetInput();
+    const auto &matrix = GetInput();
 
     if (matrix.empty()) {
       is_valid = false;
@@ -29,7 +29,7 @@ bool ZyazevaSGaussJordanElMPI::ValidationImpl() {
       int n = matrix.size();
       is_valid = true;
 
-      for (const auto& row : matrix) {
+      for (const auto &row : matrix) {
         if (row.size() != static_cast<size_t>(n + 1)) {
           is_valid = false;
           break;
@@ -52,7 +52,7 @@ bool ZyazevaSGaussJordanElMPI::RunImpl() {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  const auto& input = GetInput();
+  const auto &input = GetInput();
   int n = (rank == 0 ? static_cast<int>(input.size()) : 0);
   MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
 

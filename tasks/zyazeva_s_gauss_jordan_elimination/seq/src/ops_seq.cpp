@@ -11,14 +11,14 @@
 
 namespace zyazeva_s_gauss_jordan_elimination {
 
-ZyazevaSGaussJordanElSEQ::ZyazevaSGaussJordanElSEQ(const InType& in) {
+ZyazevaSGaussJordanElSEQ::ZyazevaSGaussJordanElSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = std::vector<float>();
 }
 
 bool ZyazevaSGaussJordanElSEQ::ValidationImpl() {
-  const auto& matrix = GetInput();
+  const auto &matrix = GetInput();
 
   if (matrix.empty()) {
     return false;
@@ -26,7 +26,7 @@ bool ZyazevaSGaussJordanElSEQ::ValidationImpl() {
 
   size_t n = matrix.size();
 
-  for (const auto& row : matrix) {
+  for (const auto &row : matrix) {
     if (row.size() != n + 1) {
       return false;
     }
@@ -95,7 +95,7 @@ bool ZyazevaSGaussJordanElSEQ::RunImpl() {
 }
 
 bool ZyazevaSGaussJordanElSEQ::PostProcessingImpl() {
-  const auto& solutions = GetOutput();
+  const auto &solutions = GetOutput();
   return !solutions.empty();
 }
 
