@@ -28,8 +28,6 @@ class ZyazevaSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, 
     for (int i = 0; i < n; ++i) {
       input_data_[i].resize(n + 1);
 
-      float row_sum = 0.0f;
-
       for (int j = 0; j < n; ++j) {
         if (i == j) {
           input_data_[i][j] = static_cast<float>(n * 2) + static_cast<float>(i % 10);
@@ -38,7 +36,6 @@ class ZyazevaSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, 
         } else {
           input_data_[i][j] = 0.01f;
         }
-        row_sum += std::abs(input_data_[i][j]);
       }
       input_data_[i][n] = 0.0f;
       for (int j = 0; j < n; ++j) {
