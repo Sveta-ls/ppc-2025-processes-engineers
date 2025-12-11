@@ -1,6 +1,9 @@
 #include "zyazeva_s_gauss_jordan_elimination/mpi/include/ops_mpi.hpp"
+
 #include <mpi.h>
+
 #include <cmath>
+
 #include "util/include/util.hpp"
 #include "zyazeva_s_gauss_jordan_elimination/common/include/common.hpp"
 
