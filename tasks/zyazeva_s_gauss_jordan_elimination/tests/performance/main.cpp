@@ -1,8 +1,10 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
+#include <array>
 #include <cmath>
 #include <cstdlib>
+#include <tuple>
 
 #include "util/include/perf_test_util.hpp"
 #include "zyazeva_s_gauss_jordan_elimination/common/include/common.hpp"

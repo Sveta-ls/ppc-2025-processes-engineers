@@ -1,9 +1,12 @@
 #include "zyazeva_s_gauss_jordan_elimination/seq/include/ops_seq.hpp"
 
+#include <algorithm>
 #include <cfloat>
 #include <cmath>
+#include <cstddef>
+#include <utility>
+#include <vector>
 
-#include "util/include/util.hpp"
 #include "zyazeva_s_gauss_jordan_elimination/common/include/common.hpp"
 
 namespace zyazeva_s_gauss_jordan_elimination {
@@ -24,10 +27,7 @@ bool ZyazevaSGaussJordanElSEQ::ValidationImpl() {
 
   std::size_t n = matrix.size();
 
-  if (!std::all_of(matrix.begin(), matrix.end(), [n](const auto &row) { return row.size() == n + 1; })) {
-    return false;
-  }
-  return true;
+  return std::ranges::all_of(matrix, [n](const auto &row) { return row.size() == n + 1; });
 }
 
 bool ZyazevaSGaussJordanElSEQ::PreProcessingImpl() {
@@ -37,7 +37,7 @@ bool ZyazevaSGaussJordanElSEQ::PreProcessingImpl() {
 
 namespace {
 
-bool kFindAndSwapPivotRow(std::vector<std::vector<float>> &a, int i, int n, float epsilon) {
+bool KFindAndSwapPivotRow(std::vector<std::vector<float>> &a, int i, int n, float epsilon) {
   if (std::abs(a[i][i]) < epsilon) {
     int c = 1;
     while ((i + c) < n && std::abs(a[i + c][i]) < epsilon) {
@@ -55,14 +55,14 @@ bool kFindAndSwapPivotRow(std::vector<std::vector<float>> &a, int i, int n, floa
   return true;
 }
 
-void kNormalizeCurrentRow(std::vector<std::vector<float>> &a, int i, int n) {
+void KNormalizeCurrentRow(std::vector<std::vector<float>> &a, int i, int n) {
   float pivot = a[i][i];
   for (int k = i; k <= n; k++) {
-    a[i][k] /= pivot;  // j
+    a[i][k] /= pivot;
   }
 }
 
-void kEliminateColumn(std::vector<std::vector<float>> &a, int i, int n) {
+void KEliminateColumn(std::vector<std::vector<float>> &a, int i, int n) {
   for (int j = 0; j < n; j++) {
     if (j != i) {
       float factor = a[j][i];
@@ -90,13 +90,13 @@ bool ZyazevaSGaussJordanElSEQ::RunImpl() {
   int n = static_cast<int>(a.size());
 
   for (int i = 0; i < n; i++) {
-    if (!kFindAndSwapPivotRow(a, i, n, kEpsilon)) {
+    if (!KFindAndSwapPivotRow(a, i, n, kEpsilon)) {
       GetOutput() = std::vector<float>();
       return false;
     }
 
-    kNormalizeCurrentRow(a, i, n);
-    kEliminateColumn(a, i, n);
+    KNormalizeCurrentRow(a, i, n);
+    KEliminateColumn(a, i, n);
   }
 
   std::vector<float> solutions = ExtractSolutions(a, n);
