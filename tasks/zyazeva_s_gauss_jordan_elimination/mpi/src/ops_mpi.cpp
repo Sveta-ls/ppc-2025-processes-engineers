@@ -3,13 +3,10 @@
 #include <mpi.h>
 
 #include <algorithm>
-#include <array>
 #include <climits>
 #include <cmath>
 #include <cstddef>
-#include <cstdint>
 #include <utility>
-#include <vector>
 
 #include "util/include/util.hpp"
 #include "zyazeva_s_gauss_jordan_elimination/common/include/common.hpp"
@@ -55,25 +52,6 @@ bool ZyazevaSGaussJordanElMPI::PreProcessingImpl() {
   return true;
 }
 namespace {
-
-int GetMatrixSize(int rank, const std::vector<std::vector<float>>& input) {
-  int n = (rank == 0 ? static_cast<int>(input.size()) : 0);
-  MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  return n;
-}
-
-std::vector<double> PrepareFlatMatrix(int rank, const std::vector<std::vector<float>>& input, int n, int width) {
-  std::vector<double> flat;
-  if (rank == 0) {
-    flat.resize(static_cast<std::size_t>(n) * width);
-    for (int i = 0; i < n; ++i) {
-      for (int j = 0; j < width; ++j) {
-        flat[static_cast<std::size_t>((i * width) + j)] = static_cast<double>(input[i][j]);
-      }
-    }
-  }
-  return flat;
-}
 
 std::vector<int> DistributeRows(int size, int n) {
   std::vector<int> rows(size);
@@ -123,14 +101,14 @@ int FindRowOwner(int row_index, int size, const std::vector<int>& rows) {
 }
 
 int FindLocalPivotRow(int k, int start_row, int local_rows, const std::vector<double>& local_matrix, int width,
-                      double kEPS) {
+                      double k_eps) {
   int local_found = INT_MAX;
   for (int i = 0; i < local_rows; ++i) {
     int gi = start_row + i;
     if (gi < k) {
       continue;
     }
-    if (std::fabs(local_matrix[static_cast<std::size_t>((i * width) + k)]) > kEPS) {
+    if (std::fabs(local_matrix[static_cast<std::size_t>((i * width) + k)]) > k_eps) {
       local_found = gi;
       break;
     }
@@ -165,50 +143,60 @@ void SwapRowsSameOwner(int rank, int owner, int k, int global_found, int start_r
 
 void SwapRowsDifferentOwners(int rank, int owner, int owner2, int k, int global_found, int start_row,
                              std::vector<double>& local_matrix, int width) {
-  std::vector<double> row_k, row_f;
+  std::vector<double> row_k;
+  std::vector<double> row_f;
+
+  using diff_t = std::vector<double>::difference_type;
+
   if (rank == owner) {
-    row_k.assign(local_matrix.begin() + static_cast<std::ptrdiff_t>((k - start_row) * width),
-                 local_matrix.begin() + static_cast<std::ptrdiff_t>((k - start_row + 1) * width));
+    diff_t offset = static_cast<diff_t>((k - start_row)) * static_cast<diff_t>(width);
+    row_k.assign(local_matrix.begin() + offset, local_matrix.begin() + offset + static_cast<diff_t>(width));
   }
+
   if (rank == owner2) {
-    row_f.assign(local_matrix.begin() + static_cast<std::ptrdiff_t>((global_found - start_row) * width),
-                 local_matrix.begin() + static_cast<std::ptrdiff_t>((global_found - start_row + 1) * width));
+    diff_t offset = static_cast<diff_t>((global_found - start_row)) * static_cast<diff_t>(width);
+    row_f.assign(local_matrix.begin() + offset, local_matrix.begin() + offset + static_cast<diff_t>(width));
   }
 
   std::array<MPI_Request, 2> reqs{};
+
   if (rank == owner) {
-    MPI_Isend(row_k.data(), width, MPI_DOUBLE, owner2, 100 + k, MPI_COMM_WORLD, &reqs[0]);
-    MPI_Irecv(row_f.data(), width, MPI_DOUBLE, owner2, 200 + k, MPI_COMM_WORLD, &reqs[1]);
+    MPI_Isend(row_k.data(), width, MPI_DOUBLE, owner2, 100 + k, MPI_COMM_WORLD, reqs.data());
+    MPI_Irecv(row_f.data(), width, MPI_DOUBLE, owner2, 200 + k, MPI_COMM_WORLD, reqs.data() + 1);
     MPI_Waitall(2, reqs.data(), MPI_STATUSES_IGNORE);
-    std::copy(row_f.begin(), row_f.end(), local_matrix.begin() + static_cast<std::ptrdiff_t>((k - start_row) * width));
+
+    diff_t offset = static_cast<diff_t>((k - start_row)) * static_cast<diff_t>(width);
+    std::ranges::copy(row_f, local_matrix.begin() + offset);
+
   } else if (rank == owner2) {
-    MPI_Irecv(row_k.data(), width, MPI_DOUBLE, owner, 100 + k, MPI_COMM_WORLD, &reqs[0]);
-    MPI_Isend(row_f.data(), width, MPI_DOUBLE, owner, 200 + k, MPI_COMM_WORLD, &reqs[1]);
+    MPI_Irecv(row_k.data(), width, MPI_DOUBLE, owner, 100 + k, MPI_COMM_WORLD, reqs.data());
+    MPI_Isend(row_f.data(), width, MPI_DOUBLE, owner, 200 + k, MPI_COMM_WORLD, reqs.data() + 1);
     MPI_Waitall(2, reqs.data(), MPI_STATUSES_IGNORE);
-    std::copy(row_k.begin(), row_k.end(),
-              local_matrix.begin() + static_cast<std::ptrdiff_t>((global_found - start_row) * width));
+
+    diff_t offset = static_cast<diff_t>((global_found - start_row)) * static_cast<diff_t>(width);
+    std::ranges::copy(row_k, local_matrix.begin() + offset);
   }
 }
 
 void NormalizePivotRow(int rank, int owner, int k, int start_row, std::vector<double>& local_matrix,
-                       std::vector<double>& pivot, int width, double kEPS) {
+                       std::vector<double>& pivot, int width, double k_eps) {
   if (rank == owner) {
     int lk = k - start_row;
-    double piv = local_matrix[static_cast<std::size_t>(lk * width + k)];
-    if (std::fabs(piv) < kEPS) {
+    double piv = local_matrix[static_cast<std::size_t>((lk * width) + k)];
+    if (std::fabs(piv) < k_eps) {
       MPI_Abort(MPI_COMM_WORLD, 1);
     }
     for (int j = 0; j < width; ++j) {
-      pivot[j] = local_matrix[static_cast<std::size_t>(lk * width + j)] / piv;
+      pivot[j] = local_matrix[static_cast<std::size_t>((lk * width) + j)] / piv;
     }
-    std::copy(pivot.begin(), pivot.end(), local_matrix.begin() + static_cast<std::ptrdiff_t>(lk * width));
+    std::ranges::copy(pivot, local_matrix.begin() + static_cast<std::vector<double>::difference_type>(lk * width));
   }
+
+  MPI_Bcast(pivot.data(), width, MPI_DOUBLE, owner, MPI_COMM_WORLD);
 }
 
-void EliminateColumn(int owner, int k, int start_row, int local_rows, std::vector<double>& local_matrix,
+void EliminateColumn(int k, int start_row, int local_rows, std::vector<double>& local_matrix,
                      const std::vector<double>& pivot, int width) {
-  MPI_Bcast(const_cast<double*>(pivot.data()), width, MPI_DOUBLE, owner, MPI_COMM_WORLD);
-
   for (int i = 0; i < local_rows; ++i) {
     int gi = start_row + i;
     if (gi == k) {
@@ -231,7 +219,9 @@ std::vector<double> ExtractLocalSolution(int local_rows, const std::vector<doubl
 
 std::vector<double> GatherSolutions(int rank, int size, const std::vector<int>& rows,
                                     const std::vector<double>& local_solution, int n) {
-  std::vector<int> sol_counts(size), sol_displs(size);
+  std::vector<int> sol_counts(size);
+  std::vector<int> sol_displs(size);
+
   int off = 0;
   for (int proc = 0; proc < size; ++proc) {
     sol_counts[proc] = rows[proc];
@@ -272,14 +262,34 @@ bool ZyazevaSGaussJordanElMPI::RunImpl() {
 
   const auto& input = GetInput();
 
-  int n = GetMatrixSize(rank, input);
+  // Встроенный функционал GetMatrixSize
+  int n = 0;
+  if (rank == 0) {
+    n = static_cast<int>(input.size());
+  }
+  static_cast<void>(input);  // Показываем, что параметр используется
+  MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
   const int width = n + 1;
 
-  std::vector<double> flat = PrepareFlatMatrix(rank, input, n, width);
+  // Встроенный функционал PrepareFlatMatrix
+  std::vector<double> flat(static_cast<std::size_t>(n) * static_cast<std::size_t>(width));
+
+  if (rank == 0) {
+    for (int i = 0; i < n; ++i) {
+      for (int j = 0; j < width; ++j) {
+        flat[static_cast<std::size_t>(i * width + j)] =
+            static_cast<double>(input[static_cast<std::size_t>(i)][static_cast<std::size_t>(j)]);
+      }
+    }
+  }
+
+  MPI_Bcast(flat.data(), n * width, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
   std::vector<int> rows = DistributeRows(size, n);
 
-  std::vector<int> send_counts(size), displs(size);
+  std::vector<int> send_counts(size);
+  std::vector<int> displs(size);
   CalculateScatterParameters(size, rows, width, send_counts, displs);
 
   int local_rows = rows[rank];
@@ -289,14 +299,14 @@ bool ZyazevaSGaussJordanElMPI::RunImpl() {
 
   int start_row = CalculateStartRow(rank, rows);
 
-  const double kEPS = 1e-12;
+  const double k_eps = 1e-12;
   std::vector<double> pivot(width);
 
   // Основной цикл Гаусса-Жордана
   for (int k = 0; k < n; ++k) {
     int owner = FindRowOwner(k, size, rows);
 
-    int local_found = FindLocalPivotRow(k, start_row, local_rows, local_matrix, width, kEPS);
+    int local_found = FindLocalPivotRow(k, start_row, local_rows, local_matrix, width, k_eps);
     int global_found = FindGlobalPivotRow(local_found);
 
     if (global_found == INT_MAX) {
@@ -312,8 +322,8 @@ bool ZyazevaSGaussJordanElMPI::RunImpl() {
       SwapRowsDifferentOwners(rank, owner, owner2, k, global_found, start_row, local_matrix, width);
     }
 
-    NormalizePivotRow(rank, owner, k, start_row, local_matrix, pivot, width, kEPS);
-    EliminateColumn(owner, k, start_row, local_rows, local_matrix, pivot, width);
+    NormalizePivotRow(rank, owner, k, start_row, local_matrix, pivot, width, k_eps);
+    EliminateColumn(k, start_row, local_rows, local_matrix, pivot, width);
   }
 
   std::vector<double> local_solution = ExtractLocalSolution(local_rows, local_matrix, width, n);

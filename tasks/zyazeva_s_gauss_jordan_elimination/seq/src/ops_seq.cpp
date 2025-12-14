@@ -1,11 +1,7 @@
 #include "zyazeva_s_gauss_jordan_elimination/seq/include/ops_seq.hpp"
 
-#include <algorithm>
 #include <cfloat>
 #include <cmath>
-#include <cstddef>
-#include <utility>
-#include <vector>
 
 #include "util/include/util.hpp"
 #include "zyazeva_s_gauss_jordan_elimination/common/include/common.hpp"
@@ -41,7 +37,7 @@ bool ZyazevaSGaussJordanElSEQ::PreProcessingImpl() {
 
 namespace {
 
-bool FindAndSwapPivotRow(std::vector<std::vector<float>>& a, int i, int n, float epsilon) {
+bool kFindAndSwapPivotRow(std::vector<std::vector<float>>& a, int i, int n, float epsilon) {
   if (std::abs(a[i][i]) < epsilon) {
     int c = 1;
     while ((i + c) < n && std::abs(a[i + c][i]) < epsilon) {
@@ -59,14 +55,14 @@ bool FindAndSwapPivotRow(std::vector<std::vector<float>>& a, int i, int n, float
   return true;
 }
 
-void NormalizeCurrentRow(std::vector<std::vector<float>>& a, int i, int n) {
+void kNormalizeCurrentRow(std::vector<std::vector<float>>& a, int i, int n) {
   float pivot = a[i][i];
   for (int k = i; k <= n; k++) {
     a[i][k] /= pivot;
   }
 }
 
-void EliminateColumn(std::vector<std::vector<float>>& a, int i, int n) {
+void kEliminateColumn(std::vector<std::vector<float>>& a, int i, int n) {
   for (int j = 0; j < n; j++) {
     if (j != i) {
       float factor = a[j][i];
@@ -94,13 +90,13 @@ bool ZyazevaSGaussJordanElSEQ::RunImpl() {
   int n = static_cast<int>(a.size());
 
   for (int i = 0; i < n; i++) {
-    if (!FindAndSwapPivotRow(a, i, n, kEpsilon)) {
+    if (!kFindAndSwapPivotRow(a, i, n, kEpsilon)) {
       GetOutput() = std::vector<float>();
       return false;
     }
 
-    NormalizeCurrentRow(a, i, n);
-    EliminateColumn(a, i, n);
+    kNormalizeCurrentRow(a, i, n);
+    kEliminateColumn(a, i, n);
   }
 
   std::vector<float> solutions = ExtractSolutions(a, n);

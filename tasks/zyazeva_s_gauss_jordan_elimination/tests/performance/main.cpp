@@ -2,9 +2,7 @@
 #include <mpi.h>
 
 #include <cmath>
-#include <cstdint>
 #include <cstdlib>
-#include <vector>
 
 #include "util/include/perf_test_util.hpp"
 #include "zyazeva_s_gauss_jordan_elimination/common/include/common.hpp"
@@ -66,7 +64,7 @@ class ZyazevaSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, 
       return false;
     }
 
-    const float kEps = 1e-2F;
+    const float k_eps = 1e-2F;
 
     int correct_count = 0;
     int total_count = static_cast<int>(output_data.size());
@@ -75,13 +73,13 @@ class ZyazevaSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, 
       float expected = solutions_[i];
       float diff = std::abs(output_data[i] - expected);
 
-      if (diff <= kEps) {
+      if (diff <= k_eps) {
         correct_count++;
       }
     }
 
     float accuracy = static_cast<float>(correct_count) / static_cast<float>(total_count);
-    return accuracy >= 0.95f;
+    return accuracy >= 0.95F;
   }
 
   InType GetTestInputData() final {
