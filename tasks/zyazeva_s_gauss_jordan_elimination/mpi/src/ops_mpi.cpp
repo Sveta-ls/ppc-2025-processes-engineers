@@ -209,7 +209,7 @@ void EliminateColumn(int k, int start_row, int local_rows, std::vector<double> &
       continue;
     }
     double f =
-        local_matrix[static_cast<std::size_t>(i) * static_cast<std::size_t>(width) + static_cast<std::size_t>(k)];
+        local_matrix[(static_cast<std::size_t>(i) * static_cast<std::size_t>(width)) + static_cast<std::size_t>(k)];
     for (int j = 0; j < width; ++j) {
       local_matrix[(static_cast<std::size_t>(i) * static_cast<std::size_t>(width)) + static_cast<std::size_t>(j)] -=
           f * pivot[j];
