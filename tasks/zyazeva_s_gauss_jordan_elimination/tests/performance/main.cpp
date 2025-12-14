@@ -49,7 +49,7 @@ class ZyazevaSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, 
     int mpi_initialized = 0;
     MPI_Initialized(&mpi_initialized);
 
-    if (mpi_initialized != 0)  {
+    if (mpi_initialized != 0) {
       int rank = 0;
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 

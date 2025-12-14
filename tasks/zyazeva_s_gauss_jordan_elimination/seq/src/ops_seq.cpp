@@ -1,18 +1,18 @@
 #include "zyazeva_s_gauss_jordan_elimination/seq/include/ops_seq.hpp"
 
-#include <algorithm>  
-#include <cstddef>     
-#include <utility>      
-#include <vector>      
-#include <cmath>        
-#include <cfloat> 
+#include <algorithm>
+#include <cfloat>
+#include <cmath>
+#include <cstddef>
+#include <utility>
+#include <vector>
 
 #include "util/include/util.hpp"
 #include "zyazeva_s_gauss_jordan_elimination/common/include/common.hpp"
 
 namespace zyazeva_s_gauss_jordan_elimination {
 
-ZyazevaSGaussJordanElSEQ::ZyazevaSGaussJordanElSEQ(const InType &in) {
+ZyazevaSGaussJordanElSEQ::ZyazevaSGaussJordanElSEQ(const InType& in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   InType temp = in;
   GetInput() = std::move(temp);
@@ -20,7 +20,7 @@ ZyazevaSGaussJordanElSEQ::ZyazevaSGaussJordanElSEQ(const InType &in) {
 }
 
 bool ZyazevaSGaussJordanElSEQ::ValidationImpl() {
-  const auto &matrix = GetInput();
+  const auto& matrix = GetInput();
 
   if (matrix.empty()) {
     return false;
@@ -28,9 +28,7 @@ bool ZyazevaSGaussJordanElSEQ::ValidationImpl() {
 
   std::size_t n = matrix.size();
 
-  if (!std::all_of(matrix.begin(), matrix.end(), [n](const auto& row) {
-      return row.size() == n + 1;
-    })) {
+  if (!std::all_of(matrix.begin(), matrix.end(), [n](const auto& row) { return row.size() == n + 1; })) {
     return false;
   }
   return true;
@@ -43,8 +41,7 @@ bool ZyazevaSGaussJordanElSEQ::PreProcessingImpl() {
 
 namespace {
 
-bool FindAndSwapPivotRow(std::vector<std::vector<float>>& a, int i, int n, 
-                         float epsilon) {
+bool FindAndSwapPivotRow(std::vector<std::vector<float>>& a, int i, int n, float epsilon) {
   if (std::abs(a[i][i]) < epsilon) {
     int c = 1;
     while ((i + c) < n && std::abs(a[i + c][i]) < epsilon) {
@@ -52,7 +49,7 @@ bool FindAndSwapPivotRow(std::vector<std::vector<float>>& a, int i, int n,
     }
 
     if ((i + c) == n) {
-      return false; 
+      return false;
     }
 
     for (int k = 0; k <= n; k++) {
@@ -88,32 +85,32 @@ std::vector<float> ExtractSolutions(const std::vector<std::vector<float>>& a, in
   return solutions;
 }
 
-}
+}  
 
 bool ZyazevaSGaussJordanElSEQ::RunImpl() {
   constexpr float kEpsilon = 1e-7F;
-  
+
   std::vector<std::vector<float>> a = GetInput();
   int n = static_cast<int>(a.size());
-  
+
   for (int i = 0; i < n; i++) {
     if (!FindAndSwapPivotRow(a, i, n, kEpsilon)) {
       GetOutput() = std::vector<float>();
       return false;
     }
-    
+
     NormalizeCurrentRow(a, i, n);
     EliminateColumn(a, i, n);
   }
-  
+
   std::vector<float> solutions = ExtractSolutions(a, n);
   GetOutput() = solutions;
-  
+
   return true;
 }
 
 bool ZyazevaSGaussJordanElSEQ::PostProcessingImpl() {
-  const auto &solutions = GetOutput();
+  const auto& solutions = GetOutput();
   return !solutions.empty();
 }
 
