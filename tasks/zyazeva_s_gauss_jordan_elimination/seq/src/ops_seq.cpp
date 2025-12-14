@@ -58,7 +58,7 @@ bool kFindAndSwapPivotRow(std::vector<std::vector<float>>& a, int i, int n, floa
 void kNormalizeCurrentRow(std::vector<std::vector<float>>& a, int i, int n) {
   float pivot = a[i][i];
   for (int k = i; k <= n; k++) {
-    a[i][k] /= pivot;
+    a[i][k] /= pivot;//j
   }
 }
 
