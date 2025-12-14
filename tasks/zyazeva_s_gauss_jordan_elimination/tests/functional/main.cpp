@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
-#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
@@ -31,46 +30,47 @@ class ZyazevaSGaussJordanFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InTyp
     switch (test_case) {
       case 0:
         input_data_ = {{2, 1, 5}, {1, 2, 4}};
-        expected_solutions_ = {2.0f, 1.0f};
+        expected_solutions_ = {2.0F, 1.0F};
         break;
 
       case 1:
-        input_data_ = {{1.0f, 1.0f, 1.0f, 6.0f}, {2.0f, 1.0f, 3.0f, 13.0f}, {1.0f, 2.0f, 1.0f, 8.0f}};
-        expected_solutions_ = {1.0f, 2.0f, 3.0f};
+        input_data_ = {{1.0F, 1.0F, 1.0F, 6.0F}, {2.0F, 1.0F, 3.0F, 13.0F}, {1.0F, 2.0F, 1.0F, 8.0F}};
+        expected_solutions_ = {1.0F, 2.0F, 3.0F};
         break;
 
       case 2:
-        input_data_ = {{3.0f, 0.0f, 0.0f, 6.0f}, {0.0f, 2.0f, 0.0f, 8.0f}, {0.0f, 0.0f, 5.0f, 15.0f}};
-        expected_solutions_ = {2.0f, 4.0f, 3.0f};
+        input_data_ = {{3.0F, 0.0F, 0.0F, 6.0F}, {0.0F, 2.0F, 0.0F, 8.0F}, {0.0F, 0.0F, 5.0F, 15.0F}};
+        expected_solutions_ = {2.0F, 4.0F, 3.0F};
         break;
 
       case 3:
-        input_data_ = {{2.0f, 1.0f, 3.0f, 12.0f}, {0.0f, 3.0f, 2.0f, 9.0f}, {0.0f, 0.0f, 4.0f, 12.0f}};
-        expected_solutions_ = {1.0f, 1.0f, 3.0f};
+        input_data_ = {{2.0F, 1.0F, 3.0F, 12.0F}, {0.0F, 3.0F, 2.0F, 9.0F}, {0.0F, 0.0F, 4.0F, 12.0F}};
+        expected_solutions_ = {1.0F, 1.0F, 3.0F};
         break;
 
       case 4:
-        input_data_ = {{1.0f, 0.0f, 0.0f, 5.0f}, {0.0f, 1.0f, 0.0f, 7.0f}, {0.0f, 0.0f, 1.0f, 9.0f}};
-        expected_solutions_ = {5.0f, 7.0f, 9.0f};
+        input_data_ = {{1.0F, 0.0F, 0.0F, 5.0F}, {0.0F, 1.0F, 0.0F, 7.0F}, {0.0F, 0.0F, 1.0F, 9.0F}};
+        expected_solutions_ = {5.0F, 7.0F, 9.0F};
         break;
 
       case 7:
-        input_data_ = {{1.0f, 1.0f, 1.0f, 1.0f, 10.0f},
-                       {1.0f, 2.0f, 3.0f, 4.0f, 30.0f},
-                       {2.0f, 1.0f, 4.0f, 3.0f, 25.0f},
-                       {3.0f, 4.0f, 1.0f, 2.0f, 20.0f}};
-        expected_solutions_ = {1.0f, 2.0f, 3.0f, 4.0f};
+        input_data_ = {{1.0F, 1.0F, 1.0F, 1.0F, 10.0F},
+                       {1.0F, 2.0F, 3.0F, 4.0F, 30.0F},
+                       {2.0F, 1.0F, 4.0F, 3.0F, 25.0F},
+                       {3.0F, 4.0F, 1.0F, 2.0F, 20.0F}};
+        expected_solutions_ = {1.0F, 2.0F, 3.0F, 4.0F};
+        break;
         break;
 
       default:
-        input_data_ = {{5.0f, 15.0f}};
-        expected_solutions_ = {3.0f};
+        input_data_ = {{5.0F, 15.0F}};
+        expected_solutions_ = {3.0F};
         break;
     }
   }
 
   auto CheckTestOutputData(OutType &output_data) -> bool final {  // NOLINT
-    const float epsilon = 1e-4f;
+    const float epsilon = 1e-4F;
 
     if (should_fail_) {
       return output_data.empty() || output_data.size() != expected_solutions_.size();
@@ -111,41 +111,41 @@ class ZyazevaSGaussJordanFuncTestsMPI : public ppc::util::BaseRunFuncTests<InTyp
 
     switch (test_case) {
       case 0:
-        input_data_ = {{2.0f, 1.0f, 5.0f}, {1.0f, 2.0f, 4.0f}};
-        expected_solutions_ = {2.0f, 1.0f};
+        input_data_ = {{2.0F, 1.0F, 5.0F}, {1.0F, 2.0F, 4.0F}};
+        expected_solutions_ = {2.0F, 1.0F};
         break;
 
       case 1:
-        input_data_ = {{1.0f, 1.0f, 1.0f, 6.0f}, {2.0f, 1.0f, 3.0f, 13.0f}, {1.0f, 2.0f, 1.0f, 8.0f}};
-        expected_solutions_ = {1.0f, 2.0f, 3.0f};
+        input_data_ = {{1.0F, 1.0F, 1.0F, 6.0F}, {2.0F, 1.0F, 3.0F, 13.0F}, {1.0F, 2.0F, 1.0F, 8.0F}};
+        expected_solutions_ = {1.0F, 2.0F, 3.0F};
         break;
 
       case 2:
-        input_data_ = {{3.0f, 0.0f, 0.0f, 6.0f}, {0.0f, 2.0f, 0.0f, 8.0f}, {0.0f, 0.0f, 5.0f, 15.0f}};
-        expected_solutions_ = {2.0f, 4.0f, 3.0f};
+        input_data_ = {{3.0F, 0.0F, 0.0F, 6.0F}, {0.0F, 2.0F, 0.0F, 8.0F}, {0.0F, 0.0F, 5.0F, 15.0F}};
+        expected_solutions_ = {2.0F, 4.0F, 3.0F};
         break;
 
       case 3:
-        input_data_ = {{2.0f, 1.0f, 3.0f, 12.0f}, {0.0f, 3.0f, 2.0f, 9.0f}, {0.0f, 0.0f, 4.0f, 12.0f}};
-        expected_solutions_ = {1.0f, 1.0f, 3.0f};
+        input_data_ = {{2.0F, 1.0F, 3.0F, 12.0F}, {0.0F, 3.0F, 2.0F, 9.0F}, {0.0F, 0.0F, 4.0F, 12.0F}};
+        expected_solutions_ = {1.0F, 1.0F, 3.0F};
         break;
 
       case 4:
-        input_data_ = {{1.0f, 0.0f, 0.0f, 5.0f}, {0.0f, 1.0f, 0.0f, 7.0f}, {0.0f, 0.0f, 1.0f, 9.0f}};
-        expected_solutions_ = {5.0f, 7.0f, 9.0f};
+        input_data_ = {{1.0F, 0.0F, 0.0F, 5.0F}, {0.0F, 1.0F, 0.0F, 7.0F}, {0.0F, 0.0F, 1.0F, 9.0F}};
+        expected_solutions_ = {5.0F, 7.0F, 9.0F};
         break;
 
       case 7:
-        input_data_ = {{1.0f, 0.0f, 0.0f, 0.0f, 1.0f},
-                       {0.0f, 1.0f, 0.0f, 0.0f, 2.0f},
-                       {0.0f, 0.0f, 1.0f, 0.0f, 3.0f},
-                       {0.0f, 0.0f, 0.0f, 1.0f, 4.0f}};
-        expected_solutions_ = {1.0f, 2.0f, 3.0f, 4.0f};
+        input_data_ = {{1.0F, 0.0F, 0.0F, 0.0F, 1.0F},
+                       {0.0F, 1.0F, 0.0F, 0.0F, 2.0F},
+                       {0.0F, 0.0F, 1.0F, 0.0F, 3.0F},
+                       {0.0F, 0.0F, 0.0F, 1.0F, 4.0F}};
+        expected_solutions_ = {1.0F, 2.0F, 3.0F, 4.0F};
         break;
 
       default:
-        input_data_ = {{5.0f, 15.0f}};
-        expected_solutions_ = {3.0f};
+        input_data_ = {{5.0F, 15.0F}};
+        expected_solutions_ = {3.0F};
         break;
     }
   }
@@ -155,7 +155,7 @@ class ZyazevaSGaussJordanFuncTestsMPI : public ppc::util::BaseRunFuncTests<InTyp
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
     if (world_rank == 0) {
-      const float epsilon = 1e-4f;
+      const float epsilon = 1e-4F;
 
       if (output_data.size() != expected_solutions_.size()) {
         return false;

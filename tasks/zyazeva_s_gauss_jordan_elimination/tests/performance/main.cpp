@@ -2,6 +2,7 @@
 #include <mpi.h>
 
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <vector>
 
@@ -22,7 +23,7 @@ class ZyazevaSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, 
     solutions_.clear();
 
     for (int i = 0; i < n; ++i) {
-      solutions_.push_back(static_cast<float>(i % 5 + 1));
+      solutions_.push_back(static_cast<float>((i % 5) + 1));
     }
 
     for (int i = 0; i < n; ++i) {
@@ -32,12 +33,12 @@ class ZyazevaSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, 
         if (i == j) {
           input_data_[i][j] = static_cast<float>(n * 2) + static_cast<float>(i % 10);
         } else if (std::abs(i - j) <= 2) {
-          input_data_[i][j] = 0.5f;
+          input_data_[i][j] = 0.5F;
         } else {
-          input_data_[i][j] = 0.01f;
+          input_data_[i][j] = 0.01F;
         }
       }
-      input_data_[i][n] = 0.0f;
+      input_data_[i][n] = 0.0F;
       for (int j = 0; j < n; ++j) {
         input_data_[i][n] += input_data_[i][j] * solutions_[j];
       }
@@ -48,7 +49,7 @@ class ZyazevaSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, 
     int mpi_initialized = 0;
     MPI_Initialized(&mpi_initialized);
 
-    if (mpi_initialized) {
+    if (mpi_initialized != 0)  {
       int rank = 0;
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -65,7 +66,7 @@ class ZyazevaSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, 
       return false;
     }
 
-    const float EPS = 1e-2f;
+    const float kEps = 1e-2F;
 
     int correct_count = 0;
     int total_count = static_cast<int>(output_data.size());
@@ -74,12 +75,12 @@ class ZyazevaSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, 
       float expected = solutions_[i];
       float diff = std::abs(output_data[i] - expected);
 
-      if (diff <= EPS) {
+      if (diff <= kEps) {
         correct_count++;
       }
     }
 
-    float accuracy = static_cast<float>(correct_count) / total_count;
+    float accuracy = static_cast<float>(correct_count) / static_cast<float>(total_count);
     return accuracy >= 0.95f;
   }
 
