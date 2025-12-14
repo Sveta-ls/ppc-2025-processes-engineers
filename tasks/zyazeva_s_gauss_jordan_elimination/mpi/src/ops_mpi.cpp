@@ -139,8 +139,8 @@ void SwapRowsSameOwner(int rank, int owner, int k, int global_found, int start_r
     int lf = global_found - start_row;
     for (int j = 0; j < width; ++j) {
       std::swap(
-          local_matrix[static_cast<std::size_t>(lk) * static_cast<std::size_t>(width) + static_cast<std::size_t>(j)],
-          local_matrix[static_cast<std::size_t>(lf) * static_cast<std::size_t>(width) + static_cast<std::size_t>(j)]);
+          local_matrix[(static_cast<std::size_t>(lk) * static_cast<std::size_t>(width)) + static_cast<std::size_t>(j)],
+          local_matrix[(static_cast<std::size_t>(lf) * static_cast<std::size_t>(width)) + static_cast<std::size_t>(j)]);
     }
   }
 }
@@ -191,7 +191,7 @@ void NormalizePivotRow(int rank, int owner, int k, int start_row, std::vector<do
       MPI_Abort(MPI_COMM_WORLD, 1);
     }
     for (int j = 0; j < width; ++j) {
-      pivot[j] = local_matrix[static_cast<std::size_t>((lk * width) + j)] / piv;
+      pivot[j] = local_matrix[(static_cast<std::size_t>(lk) * static_cast<std::size_t>(width)) + static_cast<std::size_t>(j)] / piv;
     }
     std::ranges::copy(pivot, local_matrix.begin() + static_cast<std::vector<double>::difference_type>(lk * width));
   }
@@ -209,7 +209,7 @@ void EliminateColumn(int k, int start_row, int local_rows, std::vector<double> &
     double f =
         local_matrix[static_cast<std::size_t>(i) * static_cast<std::size_t>(width) + static_cast<std::size_t>(k)];
     for (int j = 0; j < width; ++j) {
-      local_matrix[static_cast<std::size_t>((i * width) + j)] -= f * pivot[j];
+      local_matrix[(static_cast<std::size_t>(i) * static_cast<std::size_t>(width)) + static_cast<std::size_t>(j)] -= f * pivot[j];
     }
   }
 }
@@ -217,7 +217,7 @@ void EliminateColumn(int k, int start_row, int local_rows, std::vector<double> &
 std::vector<double> ExtractLocalSolution(int local_rows, const std::vector<double> &local_matrix, int width, int n) {
   std::vector<double> local_solution(local_rows);
   for (int i = 0; i < local_rows; ++i) {
-    local_solution[i] = local_matrix[static_cast<std::size_t>((i * width) + n)];
+    local_solution[i] = local_matrix[(static_cast<std::size_t>(i) * static_cast<std::size_t>(width)) + static_cast<std::size_t>(n)];
   }
   return local_solution;
 }
@@ -267,17 +267,15 @@ bool ZyazevaSGaussJordanElMPI::RunImpl() {
 
   const auto &input = GetInput();
 
-  // Встроенный функционал GetMatrixSize
   int n = 0;
   if (rank == 0) {
     n = static_cast<int>(input.size());
   }
-  static_cast<void>(input);  // Показываем, что параметр используется
+  static_cast<void>(input);  
   MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
   const int width = n + 1;
 
-  // Встроенный функционал PrepareFlatMatrix
   std::vector<double> flat(static_cast<std::size_t>(n) * static_cast<std::size_t>(width));
 
   if (rank == 0) {
