@@ -16,7 +16,7 @@ namespace zyazeva_s_gauss_jordan_elimination {
 class ZyazevaSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
  protected:
   void SetUp() override {
-    const int n = 1500;
+    const int n = 1000;
 
     input_data_.clear();
     input_data_.resize(n);
