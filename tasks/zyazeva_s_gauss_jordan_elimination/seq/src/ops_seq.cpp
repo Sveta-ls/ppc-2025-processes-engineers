@@ -85,7 +85,7 @@ std::vector<float> ExtractSolutions(const std::vector<std::vector<float>>& a, in
   return solutions;
 }
 
-}  
+}  // namespace
 
 bool ZyazevaSGaussJordanElSEQ::RunImpl() {
   constexpr float kEpsilon = 1e-7F;
