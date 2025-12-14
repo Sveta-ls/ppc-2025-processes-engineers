@@ -8,7 +8,7 @@
 
 namespace zyazeva_s_gauss_jordan_elimination {
 
-ZyazevaSGaussJordanElSEQ::ZyazevaSGaussJordanElSEQ(const InType& in) {
+ZyazevaSGaussJordanElSEQ::ZyazevaSGaussJordanElSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   InType temp = in;
   GetInput() = std::move(temp);
@@ -16,7 +16,7 @@ ZyazevaSGaussJordanElSEQ::ZyazevaSGaussJordanElSEQ(const InType& in) {
 }
 
 bool ZyazevaSGaussJordanElSEQ::ValidationImpl() {
-  const auto& matrix = GetInput();
+  const auto &matrix = GetInput();
 
   if (matrix.empty()) {
     return false;
@@ -24,7 +24,7 @@ bool ZyazevaSGaussJordanElSEQ::ValidationImpl() {
 
   std::size_t n = matrix.size();
 
-  if (!std::all_of(matrix.begin(), matrix.end(), [n](const auto& row) { return row.size() == n + 1; })) {
+  if (!std::all_of(matrix.begin(), matrix.end(), [n](const auto &row) { return row.size() == n + 1; })) {
     return false;
   }
   return true;
@@ -37,7 +37,7 @@ bool ZyazevaSGaussJordanElSEQ::PreProcessingImpl() {
 
 namespace {
 
-bool kFindAndSwapPivotRow(std::vector<std::vector<float>>& a, int i, int n, float epsilon) {
+bool kFindAndSwapPivotRow(std::vector<std::vector<float>> &a, int i, int n, float epsilon) {
   if (std::abs(a[i][i]) < epsilon) {
     int c = 1;
     while ((i + c) < n && std::abs(a[i + c][i]) < epsilon) {
@@ -55,14 +55,14 @@ bool kFindAndSwapPivotRow(std::vector<std::vector<float>>& a, int i, int n, floa
   return true;
 }
 
-void kNormalizeCurrentRow(std::vector<std::vector<float>>& a, int i, int n) {
+void kNormalizeCurrentRow(std::vector<std::vector<float>> &a, int i, int n) {
   float pivot = a[i][i];
   for (int k = i; k <= n; k++) {
     a[i][k] /= pivot;  // j
   }
 }
 
-void kEliminateColumn(std::vector<std::vector<float>>& a, int i, int n) {
+void kEliminateColumn(std::vector<std::vector<float>> &a, int i, int n) {
   for (int j = 0; j < n; j++) {
     if (j != i) {
       float factor = a[j][i];
@@ -73,7 +73,7 @@ void kEliminateColumn(std::vector<std::vector<float>>& a, int i, int n) {
   }
 }
 
-std::vector<float> ExtractSolutions(const std::vector<std::vector<float>>& a, int n) {
+std::vector<float> ExtractSolutions(const std::vector<std::vector<float>> &a, int n) {
   std::vector<float> solutions(n);
   for (int i = 0; i < n; i++) {
     solutions[i] = a[i][n];
@@ -106,7 +106,7 @@ bool ZyazevaSGaussJordanElSEQ::RunImpl() {
 }
 
 bool ZyazevaSGaussJordanElSEQ::PostProcessingImpl() {
-  const auto& solutions = GetOutput();
+  const auto &solutions = GetOutput();
   return !solutions.empty();
 }
 
