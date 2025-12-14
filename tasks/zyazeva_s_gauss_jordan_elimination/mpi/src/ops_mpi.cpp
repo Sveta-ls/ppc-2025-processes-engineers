@@ -309,7 +309,6 @@ bool ZyazevaSGaussJordanElMPI::RunImpl() {
   const double k_eps = 1e-12;
   std::vector<double> pivot(width);
 
-  // Основной цикл Гаусса-Жордана
   for (int k = 0; k < n; ++k) {
     int owner = FindRowOwner(k, size, rows);
 
