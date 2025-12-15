@@ -109,9 +109,8 @@ int FindLocalPivotRow(int k, int start_row, int local_rows, const std::vector<do
     if (gi < k) {
       continue;
     }
-    if (std::fabs(
-            local_matrix[static_cast<std::size_t>(i) * static_cast<std::size_t>(width) + static_cast<std::size_t>(k)]) >
-        k_eps) {
+    if (std::fabs(local_matrix[(static_cast<std::size_t>(i) * static_cast<std::size_t>(width)) +
+                               static_cast<std::size_t>(k)]) > k_eps) {
       local_found = gi;
       break;
     }
@@ -123,13 +122,6 @@ int FindGlobalPivotRow(int local_found) {
   int global_found = 0;
   MPI_Allreduce(&local_found, &global_found, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
   return global_found;
-}
-
-void HandleZeroPivot(int rank, int owner, std::vector<double> &pivot, int width) {
-  if (rank == owner) {
-    std::ranges::fill(pivot.begin(), pivot.end(), 0.0);
-  }
-  MPI_Bcast(pivot.data(), width, MPI_DOUBLE, owner, MPI_COMM_WORLD);
 }
 
 void SwapRowsSameOwner(int rank, int owner, int k, int global_found, int start_row, std::vector<double> &local_matrix,
@@ -145,48 +137,12 @@ void SwapRowsSameOwner(int rank, int owner, int k, int global_found, int start_r
   }
 }
 
-void SwapRowsDifferentOwners(int rank, int owner, int owner2, int k, int global_found, int start_row,
-                             std::vector<double> &local_matrix, int width) {
-  std::vector<double> row_k;
-  std::vector<double> row_f;
-
-  using DiffT = std::vector<double>::difference_type;
-
-  if (rank == owner) {
-    DiffT offset = static_cast<DiffT>((k - start_row)) * static_cast<DiffT>(width);
-    row_k.assign(local_matrix.begin() + offset, local_matrix.begin() + offset + static_cast<DiffT>(width));
-  }
-
-  if (rank == owner2) {
-    DiffT offset = static_cast<DiffT>((global_found - start_row)) * static_cast<DiffT>(width);
-    row_f.assign(local_matrix.begin() + offset, local_matrix.begin() + offset + static_cast<DiffT>(width));
-  }
-
-  std::array<MPI_Request, 2> reqs{};
-
-  if (rank == owner) {
-    MPI_Isend(row_k.data(), width, MPI_DOUBLE, owner2, 100 + k, MPI_COMM_WORLD, reqs.data());
-    MPI_Irecv(row_f.data(), width, MPI_DOUBLE, owner2, 200 + k, MPI_COMM_WORLD, reqs.data() + 1);
-    MPI_Waitall(2, reqs.data(), MPI_STATUSES_IGNORE);
-
-    DiffT offset = static_cast<DiffT>((k - start_row)) * static_cast<DiffT>(width);
-    std::ranges::copy(row_f, local_matrix.begin() + offset);
-
-  } else if (rank == owner2) {
-    MPI_Irecv(row_k.data(), width, MPI_DOUBLE, owner, 100 + k, MPI_COMM_WORLD, reqs.data());
-    MPI_Isend(row_f.data(), width, MPI_DOUBLE, owner, 200 + k, MPI_COMM_WORLD, reqs.data() + 1);
-    MPI_Waitall(2, reqs.data(), MPI_STATUSES_IGNORE);
-
-    DiffT offset = static_cast<DiffT>((global_found - start_row)) * static_cast<DiffT>(width);
-    std::ranges::copy(row_k, local_matrix.begin() + offset);
-  }
-}
-
 void NormalizePivotRow(int rank, int owner, int k, int start_row, std::vector<double> &local_matrix,
                        std::vector<double> &pivot, int width, double k_eps) {
   if (rank == owner) {
     int lk = k - start_row;
-    double piv = local_matrix[static_cast<std::size_t>((lk * width) + k)];
+    double piv =
+        local_matrix[(static_cast<std::size_t>(lk) * static_cast<std::size_t>(width)) + static_cast<std::size_t>(k)];
     if (std::fabs(piv) < k_eps) {
       MPI_Abort(MPI_COMM_WORLD, 1);
     }
@@ -195,7 +151,8 @@ void NormalizePivotRow(int rank, int owner, int k, int start_row, std::vector<do
           local_matrix[(static_cast<std::size_t>(lk) * static_cast<std::size_t>(width)) + static_cast<std::size_t>(j)] /
           piv;
     }
-    std::ranges::copy(pivot, local_matrix.begin() + static_cast<std::vector<double>::difference_type>(lk * width));
+    using DiffT = std::vector<double>::difference_type;
+    std::ranges::copy(pivot, local_matrix.begin() + (static_cast<DiffT>(lk) * static_cast<DiffT>(width)));
   }
 
   MPI_Bcast(pivot.data(), width, MPI_DOUBLE, owner, MPI_COMM_WORLD);
@@ -285,7 +242,7 @@ bool ZyazevaSGaussJordanElMPI::RunImpl() {
   if (rank == 0) {
     for (int i = 0; i < n; ++i) {
       for (int j = 0; j < width; ++j) {
-        flat[static_cast<std::size_t>(i * width + j)] =
+        flat[(static_cast<std::size_t>(i) * static_cast<std::size_t>(width)) + static_cast<std::size_t>(j)] =
             static_cast<double>(input[static_cast<std::size_t>(i)][static_cast<std::size_t>(j)]);
       }
     }
@@ -315,17 +272,10 @@ bool ZyazevaSGaussJordanElMPI::RunImpl() {
     int local_found = FindLocalPivotRow(k, start_row, local_rows, local_matrix, width, k_eps);
     int global_found = FindGlobalPivotRow(local_found);
 
-    if (global_found == INT_MAX) {
-      HandleZeroPivot(rank, owner, pivot, width);
-      continue;
-    }
-
     int owner2 = FindRowOwner(global_found, size, rows);
 
     if (owner == owner2) {
       SwapRowsSameOwner(rank, owner, k, global_found, start_row, local_matrix, width);
-    } else {
-      SwapRowsDifferentOwners(rank, owner, owner2, k, global_found, start_row, local_matrix, width);
     }
 
     NormalizePivotRow(rank, owner, k, start_row, local_matrix, pivot, width, k_eps);

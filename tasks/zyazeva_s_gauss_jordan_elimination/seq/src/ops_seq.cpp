@@ -37,24 +37,6 @@ bool ZyazevaSGaussJordanElSEQ::PreProcessingImpl() {
 
 namespace {
 
-bool KFindAndSwapPivotRow(std::vector<std::vector<float>> &a, int i, int n, float epsilon) {
-  if (std::abs(a[i][i]) < epsilon) {
-    int c = 1;
-    while ((i + c) < n && std::abs(a[i + c][i]) < epsilon) {
-      c++;
-    }
-
-    if ((i + c) == n) {
-      return false;
-    }
-
-    for (int k = 0; k <= n; k++) {
-      std::swap(a[i][k], a[i + c][k]);
-    }
-  }
-  return true;
-}
-
 void KNormalizeCurrentRow(std::vector<std::vector<float>> &a, int i, int n) {
   float pivot = a[i][i];
   for (int k = i; k <= n; k++) {
@@ -84,17 +66,10 @@ std::vector<float> ExtractSolutions(const std::vector<std::vector<float>> &a, in
 }  // namespace
 
 bool ZyazevaSGaussJordanElSEQ::RunImpl() {
-  constexpr float kEpsilon = 1e-7F;
-
   std::vector<std::vector<float>> a = GetInput();
   int n = static_cast<int>(a.size());
 
   for (int i = 0; i < n; i++) {
-    if (!KFindAndSwapPivotRow(a, i, n, kEpsilon)) {
-      GetOutput() = std::vector<float>();
-      return false;
-    }
-
     KNormalizeCurrentRow(a, i, n);
     KEliminateColumn(a, i, n);
   }
