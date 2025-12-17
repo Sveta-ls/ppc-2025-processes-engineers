@@ -202,7 +202,7 @@ const auto kTestTasksListSEQ = ppc::util::AddFuncTask<ZyazevaSGaussJordanElSEQ, 
 const std::array<TestType, 7> kTestParamMPI = {
     std::make_tuple(0, "simple_2x2"),       std::make_tuple(1, "system_3x3"),
     std::make_tuple(2, "diagonal_matrix"),  std::make_tuple(3, "triangular_matrix"),
-    std::make_tuple(4, "identity1_matrix1"), std::make_tuple(7, "system_4x4"),
+    std::make_tuple(4, "identity1_matrix"), std::make_tuple(7, "system_4x4"),
     std::make_tuple(8, "simple_1x1")};
 
 const auto kTestTasksListMPI = ppc::util::AddFuncTask<ZyazevaSGaussJordanElMPI, InType>(
