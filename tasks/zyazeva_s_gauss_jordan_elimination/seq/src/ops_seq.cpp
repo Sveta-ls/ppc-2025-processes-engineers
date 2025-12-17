@@ -71,7 +71,7 @@ bool ZyazevaSGaussJordanElSEQ::RunImpl() {
 
   for (int i = 0; i < n; i++) {
     KNormalizeCurrentRow(a, i, n);
-    KEliminateColumn(a, i, n);
+    KEliminateColumn(a, i, n); //1
   }
 
   std::vector<float> solutions = ExtractSolutions(a, n);
