@@ -16,11 +16,11 @@ namespace zyazeva_s_graham_scheme {
 
 namespace {
 
-bool SamePoint(const Point& a, const Point& b) {
+bool SamePoint(const Point &a, const Point &b) {
   return a.x == b.x && a.y == b.y;
 }
 
-bool PointLess(const Point& a, const Point& b) {
+bool PointLess(const Point &a, const Point &b) {
   return (a.x < b.x) || (a.x == b.x && a.y < b.y);
 }
 
@@ -44,16 +44,16 @@ bool CompareHulls(std::vector<Point> actual, std::vector<Point> expected) {
 
 class ZyazevaGrahamRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
-  static auto PrintTestParam(const TestType& param) -> std::string {
+  static auto PrintTestParam(const TestType &param) -> std::string {
     return std::to_string(std::get<0>(param)) + "_" + std::get<1>(param);
   }
 
  protected:
   void SetUp() override {
-    const auto& params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+    const auto &params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
 
     switch (std::get<0>(params)) {
-      case 0:  // triangle1
+      case 0:  // triangle
         input_ = {{0, 0}, {1, 0}, {0, 1}};
         expected_ = {{0, 0}, {1, 0}, {0, 1}};
         break;
@@ -90,7 +90,7 @@ class ZyazevaGrahamRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, 
     }
   }
 
-  bool CheckTestOutputData(OutType& output) final {  // NOLINT
+  bool CheckTestOutputData(OutType &output) final {  // NOLINT
     return CompareHulls(output, expected_);
   }
 
@@ -105,13 +105,13 @@ class ZyazevaGrahamRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, 
 
 class ZyazevaGrahamRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
-  static auto PrintTestParam(const TestType& param) -> std::string {
+  static auto PrintTestParam(const TestType &param) -> std::string {
     return std::to_string(std::get<0>(param)) + "_" + std::get<1>(param);
   }
 
  protected:
   void SetUp() override {
-    const auto& params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+    const auto &params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
 
     switch (std::get<0>(params)) {
       case 0:
@@ -151,7 +151,7 @@ class ZyazevaGrahamRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, 
     }
   }
 
-  bool CheckTestOutputData(OutType& output) final {  // NOLINT
+  bool CheckTestOutputData(OutType &output) final {  // NOLINT
     int rank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
