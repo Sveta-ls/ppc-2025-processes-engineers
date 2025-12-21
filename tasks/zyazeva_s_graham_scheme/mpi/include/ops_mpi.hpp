@@ -7,7 +7,7 @@
 
 namespace zyazeva_s_graham_scheme {
 
-class ZyazevaSGrahamSchemeMPI : public BaseTask {  // r
+class ZyazevaSGrahamSchemeMPI : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;

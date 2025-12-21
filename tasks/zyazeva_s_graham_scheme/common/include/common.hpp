@@ -8,7 +8,7 @@
 
 namespace zyazeva_s_graham_scheme {
 
-struct Point {  // r
+struct Point {
   int x;
   int y;
 };
