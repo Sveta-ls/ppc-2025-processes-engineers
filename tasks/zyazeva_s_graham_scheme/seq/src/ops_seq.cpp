@@ -46,7 +46,7 @@ std::vector<Point> BuildConvexHull(std::vector<Point> pts) {
 ZyazevaSGrahamSchemeSEQ::ZyazevaSGrahamSchemeSEQ(const InType& in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
-  GetOutput().clear();//g
+  GetOutput().clear();
 }
 
 bool ZyazevaSGrahamSchemeSEQ::ValidationImpl() {
