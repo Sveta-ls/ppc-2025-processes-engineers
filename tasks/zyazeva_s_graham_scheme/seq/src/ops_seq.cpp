@@ -1,60 +1,79 @@
 #include "zyazeva_s_graham_scheme/seq/include/ops_seq.hpp"
 
-#include <numeric>
+#include <algorithm>
 #include <vector>
-
-#include "zyazeva_s_graham_scheme/common/include/common.hpp"
-#include "util/include/util.hpp"
 
 namespace zyazeva_s_graham_scheme {
 
-ZyazevaSGrahamSchemeSEQ::ZyazevaSGrahamSchemeSEQ(const InType &in) {
+namespace {
+
+int Cross(const Point& O, const Point& A, const Point& B) {
+  return (A.x - O.x) * (B.y - O.y) - (A.y - O.y) * (B.x - O.x);
+}
+
+std::vector<Point> BuildConvexHull(std::vector<Point> pts) {
+  if (pts.size() < 3) {
+    return {};
+  }
+
+  std::sort(pts.begin(), pts.end(),
+            [](const Point& a, const Point& b) { return a.x < b.x || (a.x == b.x && a.y < b.y); });
+
+  std::vector<Point> hull;
+
+  for (const auto& p : pts) {
+    while (hull.size() >= 2 && Cross(hull[hull.size() - 2], hull.back(), p) <= 0) {
+      hull.pop_back();
+    }
+    hull.push_back(p);
+  }
+
+  std::size_t lower_size = hull.size();
+  for (int i = static_cast<int>(pts.size()) - 2; i >= 0; --i) {
+    const auto& p = pts[i];
+    while (hull.size() > lower_size && Cross(hull[hull.size() - 2], hull.back(), p) <= 0) {
+      hull.pop_back();
+    }
+    hull.push_back(p);
+  }
+
+  hull.pop_back();
+  return hull;
+}
+
+}  // namespace
+
+ZyazevaSGrahamSchemeSEQ::ZyazevaSGrahamSchemeSEQ(const InType& in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
-  GetOutput() = 0;
+  GetOutput().clear();
 }
 
 bool ZyazevaSGrahamSchemeSEQ::ValidationImpl() {
-  return (GetInput() > 0) && (GetOutput() == 0);
+  if (GetInput().size() < 3) {
+    GetOutput().clear();
+  }
+  return true;
 }
 
 bool ZyazevaSGrahamSchemeSEQ::PreProcessingImpl() {
-  GetOutput() = 2 * GetInput();
-  return GetOutput() > 0;
+  return true;
 }
 
 bool ZyazevaSGrahamSchemeSEQ::RunImpl() {
-  if (GetInput() == 0) {
-    return false;
+  const auto& points = GetInput();
+
+  if (points.size() < 3) {
+    GetOutput().clear();
+    return true;
   }
 
-  for (InType i = 0; i < GetInput(); i++) {
-    for (InType j = 0; j < GetInput(); j++) {
-      for (InType k = 0; k < GetInput(); k++) {
-        std::vector<InType> tmp(i + j + k, 1);
-        GetOutput() += std::accumulate(tmp.begin(), tmp.end(), 0);
-        GetOutput() -= i + j + k;
-      }
-    }
-  }
-
-  const int num_threads = ppc::util::GetNumThreads();
-  GetOutput() *= num_threads;
-
-  int counter = 0;
-  for (int i = 0; i < num_threads; i++) {
-    counter++;
-  }
-
-  if (counter != 0) {
-    GetOutput() /= counter;
-  }
-  return GetOutput() > 0;
+  GetOutput() = BuildConvexHull(points);
+  return true;
 }
 
 bool ZyazevaSGrahamSchemeSEQ::PostProcessingImpl() {
-  GetOutput() -= GetInput();
-  return GetOutput() > 0;
+  return true;
 }
 
 }  // namespace zyazeva_s_graham_scheme

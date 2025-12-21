@@ -7,8 +7,13 @@
 
 namespace zyazeva_s_graham_scheme {
 
-using InType = int;
-using OutType = int;
+struct Point {
+  int x;
+  int y;
+};
+
+using InType = std::vector<Point>;
+using OutType = std::vector<Point>;
 using TestType = std::tuple<int, std::string>;
 using BaseTask = ppc::task::Task<InType, OutType>;
 

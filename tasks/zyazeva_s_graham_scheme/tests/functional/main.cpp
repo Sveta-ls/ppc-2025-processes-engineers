@@ -1,85 +1,200 @@
 #include <gtest/gtest.h>
-#include <stb/stb_image.h>
+#include <mpi.h>
 
 #include <algorithm>
 #include <array>
-#include <cstddef>
-#include <cstdint>
-#include <numeric>
-#include <stdexcept>
 #include <string>
 #include <tuple>
-#include <utility>
 #include <vector>
 
+#include "util/include/func_test_util.hpp"
 #include "zyazeva_s_graham_scheme/common/include/common.hpp"
 #include "zyazeva_s_graham_scheme/mpi/include/ops_mpi.hpp"
 #include "zyazeva_s_graham_scheme/seq/include/ops_seq.hpp"
-#include "util/include/func_test_util.hpp"
-#include "util/include/util.hpp"
 
 namespace zyazeva_s_graham_scheme {
 
-class ZyazevaSGrahamSchemeFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
+namespace {
+
+bool SamePoint(const Point& a, const Point& b) {
+  return a.x == b.x && a.y == b.y;
+}
+
+bool PointLess(const Point& a, const Point& b) {
+  return (a.x < b.x) || (a.x == b.x && a.y < b.y);
+}
+
+bool CompareHulls(std::vector<Point> actual, std::vector<Point> expected) {
+  if (actual.size() != expected.size()) {
+    return false;
+  }
+
+  std::sort(actual.begin(), actual.end(), PointLess);
+  std::sort(expected.begin(), expected.end(), PointLess);
+
+  for (size_t i = 0; i < actual.size(); ++i) {
+    if (!SamePoint(actual[i], expected[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+}  // namespace
+
+class ZyazevaGrahamRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
-  static std::string PrintTestParam(const TestType &test_param) {
-    return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
+  static auto PrintTestParam(const TestType& param) -> std::string {
+    return std::to_string(std::get<0>(param)) + "_" + std::get<1>(param);
   }
 
  protected:
   void SetUp() override {
-    int width = -1;
-    int height = -1;
-    int channels = -1;
-    std::vector<uint8_t> img;
-    // Read image in RGB to ensure consistent channel count
-    {
-      std::string abs_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_zyazeva_s_graham_scheme, "pic.jpg");
-      auto *data = stbi_load(abs_path.c_str(), &width, &height, &channels, STBI_rgb);
-      if (data == nullptr) {
-        throw std::runtime_error("Failed to load image: " + std::string(stbi_failure_reason()));
-      }
-      channels = STBI_rgb;
-      img = std::vector<uint8_t>(data, data + (static_cast<ptrdiff_t>(width * height * channels)));
-      stbi_image_free(data);
-      if (std::cmp_not_equal(width, height)) {
-        throw std::runtime_error("width != height: ");
-      }
-    }
+    const auto& params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
 
-    TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
-    input_data_ = width - height + std::min(std::accumulate(img.begin(), img.end(), 0), channels);
+    switch (std::get<0>(params)) {
+      case 0:  // triangle
+        input_ = {{0, 0}, {1, 0}, {0, 1}};
+        expected_ = {{0, 0}, {1, 0}, {0, 1}};
+        break;
+
+      case 1:  // square with inner point
+        input_ = {{0, 0}, {0, 2}, {2, 2}, {2, 0}, {1, 1}};
+        expected_ = {{0, 0}, {0, 2}, {2, 2}, {2, 0}};
+        break;
+
+      case 2:  // collinear
+        input_ = {{0, 0}, {1, 1}, {2, 2}, {3, 3}};
+        expected_ = {{0, 0}, {3, 3}};
+        break;
+
+      case 3:  // pentagon
+        input_ = {{0, 1}, {1, 2}, {2, 1}, {1, 0}, {0, 0}};
+        expected_ = {{0, 0}, {0, 1}, {1, 2}, {2, 1}, {1, 0}};
+        break;
+
+      case 4:  // min valid
+        input_ = {{0, 0}, {1, 1}, {2, 0}};
+        expected_ = {{0, 0}, {2, 0}, {1, 1}};
+        break;
+
+      case 5:  // one point
+        input_ = {{0, 0}};
+        expected_ = {};
+        break;
+
+      case 6:  // two points
+        input_ = {{0, 0}, {1, 1}};
+        expected_ = {};
+        break;
+    }
   }
 
-  bool CheckTestOutputData(OutType &output_data) final {
-    return (input_data_ == output_data);
+  bool CheckTestOutputData(OutType& output) final {  // NOLINT
+    return CompareHulls(output, expected_);
   }
 
   InType GetTestInputData() final {
-    return input_data_;
+    return input_;
   }
 
  private:
-  InType input_data_ = 0;
+  InType input_;
+  OutType expected_;
 };
 
+class ZyazevaGrahamRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
+ public:
+  static auto PrintTestParam(const TestType& param) -> std::string {
+    return std::to_string(std::get<0>(param)) + "_" + std::get<1>(param);
+  }
+
+ protected:
+  void SetUp() override {
+    const auto& params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+
+    switch (std::get<0>(params)) {
+      case 0:
+        input_ = {{0, 0}, {1, 0}, {0, 1}};
+        expected_ = {{0, 0}, {1, 0}, {0, 1}};
+        break;
+
+      case 1:
+        input_ = {{0, 0}, {0, 2}, {2, 2}, {2, 0}, {1, 1}};
+        expected_ = {{0, 0}, {0, 2}, {2, 2}, {2, 0}};
+        break;
+
+      case 2:
+        input_ = {{0, 0}, {1, 1}, {2, 2}, {3, 3}};
+        expected_ = {{0, 0}, {3, 3}};
+        break;
+
+      case 3:
+        input_ = {{0, 1}, {1, 2}, {2, 1}, {1, 0}, {0, 0}};
+        expected_ = {{0, 0}, {0, 1}, {1, 2}, {2, 1}, {1, 0}};
+        break;
+
+      case 4:
+        input_ = {{0, 0}, {1, 1}, {2, 0}};
+        expected_ = {{0, 0}, {2, 0}, {1, 1}};
+        break;
+
+      case 5:
+        input_ = {{0, 0}};
+        expected_ = {};
+        break;
+
+      case 6:
+        input_ = {{0, 0}, {1, 1}};
+        expected_ = {};
+        break;
+    }
+  }
+
+  bool CheckTestOutputData(OutType& output) final {  // NOLINT
+    int rank = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    if (rank == 0) {
+      return CompareHulls(output, expected_);
+    }
+    return true;
+  }
+
+  InType GetTestInputData() final {
+    return input_;
+  }
+
+ private:
+  InType input_;
+  OutType expected_;
+};
 namespace {
 
-TEST_P(ZyazevaSGrahamSchemeFuncTests, MatmulFromPic) {
+TEST_P(ZyazevaGrahamRunFuncTestsSEQ, GrahamScanSEQ) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 3> kTestParam = {std::make_tuple(3, "3"), std::make_tuple(5, "5"), std::make_tuple(7, "7")};
+TEST_P(ZyazevaGrahamRunFuncTestsMPI, GrahamScanMPI) {
+  ExecuteTest(GetParam());
+}
 
-const auto kTestTasksList =
-    std::tuple_cat(ppc::util::AddFuncTask<ZyazevaSGrahamSchemeMPI, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_graham_scheme),
-                   ppc::util::AddFuncTask<ZyazevaSGrahamSchemeSEQ, InType>(kTestParam, PPC_SETTINGS_zyazeva_s_graham_scheme));
+const std::array<TestType, 7> kTests = {std::make_tuple(0, "triangle"),  std::make_tuple(1, "square_with_inner"),
+                                        std::make_tuple(2, "collinear"), std::make_tuple(3, "pentagon"),
+                                        std::make_tuple(4, "min_valid"), std::make_tuple(5, "one_point"),
+                                        std::make_tuple(6, "two_points")};
 
-const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
+const auto kSeqTasks =
+    ppc::util::AddFuncTask<ZyazevaSGrahamSchemeSEQ, InType>(kTests, PPC_SETTINGS_zyazeva_s_graham_scheme);
 
-const auto kPerfTestName = ZyazevaSGrahamSchemeFuncTests::PrintFuncTestName<ZyazevaSGrahamSchemeFuncTests>;
+const auto kMpiTasks =
+    ppc::util::AddFuncTask<ZyazevaSGrahamSchemeMPI, InType>(kTests, PPC_SETTINGS_zyazeva_s_graham_scheme);
 
-INSTANTIATE_TEST_SUITE_P(PicMatrixTests, ZyazevaSGrahamSchemeFuncTests, kGtestValues, kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(GrahamSchemeTestsSEQ, ZyazevaGrahamRunFuncTestsSEQ, ppc::util::ExpandToValues(kSeqTasks),
+                         ZyazevaGrahamRunFuncTestsSEQ::PrintFuncTestName<ZyazevaGrahamRunFuncTestsSEQ>);
+
+INSTANTIATE_TEST_SUITE_P(GrahamSchemeTestsMPI, ZyazevaGrahamRunFuncTestsMPI, ppc::util::ExpandToValues(kMpiTasks),
+                         ZyazevaGrahamRunFuncTestsMPI::PrintFuncTestName<ZyazevaGrahamRunFuncTestsMPI>);
 
 }  // namespace
 
