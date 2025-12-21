@@ -50,7 +50,7 @@ class ZyazevaSGrahamSchemeLargePerfTest : public ppc::util::BaseRunPerfTests<InT
 };
 
 TEST_P(ZyazevaSGrahamSchemeLargePerfTest, RunPerfModes) {
-  ExecuteTest(GetParam());
+  ExecuteTest(GetParam());  // r
 }
 
 const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, ZyazevaSGrahamSchemeMPI, ZyazevaSGrahamSchemeSEQ>(

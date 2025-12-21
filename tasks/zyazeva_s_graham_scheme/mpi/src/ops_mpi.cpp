@@ -19,7 +19,7 @@ int Cross(const Point& origin, const Point& a, const Point& b) {
 
 void BuildConvexHullInPlace(std::vector<Point>& pts) {
   if (pts.size() < 3) {
-    return;
+    return;  // r
   }
 
   std::ranges::sort(pts.begin(), pts.end(),
