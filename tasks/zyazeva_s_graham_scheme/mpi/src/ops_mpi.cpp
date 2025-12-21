@@ -7,12 +7,14 @@
 #include <utility>
 #include <vector>
 
+#include "zyazeva_s_graham_scheme/common/include/common.hpp"
+
 namespace zyazeva_s_graham_scheme {
 
 namespace {
 
 int Cross(const Point& origin, const Point& a, const Point& b) {
-  return (a.x - origin.x) * (b.y - origin.y) - (a.y - origin.y) * (b.x - origin.x);
+  return ((a.x - origin.x) * (b.y - origin.y)) - ((a.y - origin.y) * (b.x - origin.));
 }
 
 void BuildConvexHullInPlace(std::vector<Point>& pts) {
@@ -84,7 +86,8 @@ bool ZyazevaSGrahamSchemeMPI::RunImpl() {
   MPI_Type_contiguous(2, MPI_INT, &mpi_point);
   MPI_Type_commit(&mpi_point);
 
-  std::vector<int> sendcounts(size), displs(size);
+  std::vector<int> sendcounts(size);
+  std::vector<int> displs(size);
   int base = n / size;
   int rem = n % size;
   for (int i = 0; i < size; ++i) {
