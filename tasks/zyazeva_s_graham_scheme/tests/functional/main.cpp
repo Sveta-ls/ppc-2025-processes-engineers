@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "util/include/func_test_util.hpp"
+#include "util/include/util.hpp"
 #include "zyazeva_s_graham_scheme/common/include/common.hpp"
 #include "zyazeva_s_graham_scheme/mpi/include/ops_mpi.hpp"
 #include "zyazeva_s_graham_scheme/seq/include/ops_seq.hpp"
