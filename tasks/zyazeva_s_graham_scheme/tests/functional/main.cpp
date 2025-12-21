@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -51,7 +52,7 @@ class ZyazevaGrahamRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, 
 
  protected:
   void SetUp() override {
-    const auto &params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+    TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
     int64_t test_case = std::get<0>(params);
 
     switch (test_case) {
