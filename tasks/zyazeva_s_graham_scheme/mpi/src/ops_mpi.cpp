@@ -14,7 +14,7 @@ namespace zyazeva_s_graham_scheme {
 namespace {
 
 int Cross(const Point& origin, const Point& a, const Point& b) {
-  return ((a.x - origin.x) * (b.y - origin.y)) - ((a.y - origin.y) * (b.x - origin.));
+  return ((a.x - origin.x) * (b.y - origin.y)) - ((a.y - origin.y) * (b.x - origin.x));
 }
 
 void BuildConvexHullInPlace(std::vector<Point>& pts) {
