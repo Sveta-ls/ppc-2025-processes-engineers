@@ -52,8 +52,9 @@ class ZyazevaGrahamRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, 
  protected:
   void SetUp() override {
     const auto &params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+    int64_t test_case = std::get<0>(params);
 
-    switch (std::get<0>(params)) {
+    switch (test_case) {
       case 0:  // triangle
         input_ = {{0, 0}, {1, 0}, {0, 1}};
         expected_ = {{0, 0}, {1, 0}, {0, 1}};
@@ -113,8 +114,9 @@ class ZyazevaGrahamRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, 
  protected:
   void SetUp() override {
     const auto &params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+    int64_t test_case = std::get<0>(params);
 
-    switch (std::get<0>(params)) {
+    switch (test_case) {
       case 0:
         input_ = {{0, 0}, {1, 0}, {0, 1}};
         expected_ = {{0, 0}, {1, 0}, {0, 1}};

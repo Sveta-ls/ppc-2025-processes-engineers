@@ -29,7 +29,7 @@ class ZyazevaSGrahamSchemeLargePerfTest : public ppc::util::BaseRunPerfTests<InT
     }
 
     auto cross = [](const Point& origin, const Point& a, const Point& b) {
-      return (a.x - origin.x) * (b.y - origin.y) - (a.y - origin.y) * (b.x - origin.x);
+      return ((a.x - origin.x) * (b.y - origin.y)) - ((a.y - origin.y) * (b.x - origin.x));
     };
 
     const size_t n = output_data.size();
@@ -50,7 +50,7 @@ class ZyazevaSGrahamSchemeLargePerfTest : public ppc::util::BaseRunPerfTests<InT
 };
 
 TEST_P(ZyazevaSGrahamSchemeLargePerfTest, RunPerfModes) {
-  ExecuteTest(GetParam());  // r
+  ExecuteTest(GetParam());
 }
 
 const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, ZyazevaSGrahamSchemeMPI, ZyazevaSGrahamSchemeSEQ>(
