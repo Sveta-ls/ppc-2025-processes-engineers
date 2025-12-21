@@ -114,7 +114,7 @@ class ZyazevaGrahamRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, 
     const auto& params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
 
     switch (std::get<0>(params)) {
-      case 0:
+      case 0: 
         input_ = {{0, 0}, {1, 0}, {0, 1}};
         expected_ = {{0, 0}, {1, 0}, {0, 1}};
         break;
