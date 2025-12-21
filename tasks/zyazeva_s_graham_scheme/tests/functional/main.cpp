@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cstddef>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -29,8 +30,8 @@ bool CompareHulls(std::vector<Point> actual, std::vector<Point> expected) {
     return false;
   }
 
-  std::sort(actual.begin(), actual.end(), PointLess);
-  std::sort(expected.begin(), expected.end(), PointLess);
+  std::ranges::sort(actual.begin(), actual.end(), PointLess);
+  std::ranges::sort(expected.begin(), expected.end(), PointLess);
 
   for (size_t i = 0; i < actual.size(); ++i) {
     if (!SamePoint(actual[i], expected[i])) {

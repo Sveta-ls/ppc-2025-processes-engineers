@@ -3,15 +3,16 @@
 #include <mpi.h>
 
 #include <algorithm>
-#include <iostream>
+#include <cstddef>
+#include <utility>
 #include <vector>
 
 namespace zyazeva_s_graham_scheme {
 
 namespace {
 
-int Cross(const Point& O, const Point& A, const Point& B) {
-  return (A.x - O.x) * (B.y - O.y) - (A.y - O.y) * (B.x - O.x);
+int Cross(const Point& origin, const Point& a, const Point& b) {
+  return (a.x - origin.x) * (b.y - origin.y) - (a.y - origin.y) * (b.x - origin.x);
 }
 
 void BuildConvexHullInPlace(std::vector<Point>& pts) {
@@ -19,8 +20,8 @@ void BuildConvexHullInPlace(std::vector<Point>& pts) {
     return;
   }
 
-  std::sort(pts.begin(), pts.end(),
-            [](const Point& a, const Point& b) { return a.x < b.x || (a.x == b.x && a.y < b.y); });
+  std::ranges::sort(pts.begin(), pts.end(),
+                    [](const Point& a, const Point& b) { return a.x < b.x || (a.x == b.x && a.y < b.y); });
 
   std::vector<Point> hull;
   for (auto& p : pts) {
@@ -62,7 +63,8 @@ bool ZyazevaSGrahamSchemeMPI::PreProcessingImpl() {
 }
 
 bool ZyazevaSGrahamSchemeMPI::RunImpl() {
-  int rank = 0, size = 1;
+  int rank = 0;
+  int size = 1;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
@@ -78,12 +80,13 @@ bool ZyazevaSGrahamSchemeMPI::RunImpl() {
     }
     return true;
   }
-  MPI_Datatype MPI_POINT;
-  MPI_Type_contiguous(2, MPI_INT, &MPI_POINT);
-  MPI_Type_commit(&MPI_POINT);
+  MPI_Datatype mpi_point = MPI_DATATYPE_NULL;
+  MPI_Type_contiguous(2, MPI_INT, &mpi_point);
+  MPI_Type_commit(&mpi_point);
 
   std::vector<int> sendcounts(size), displs(size);
-  int base = n / size, rem = n % size;
+  int base = n / size;
+  int rem = n % size;
   for (int i = 0; i < size; ++i) {
     sendcounts[i] = base + (i < rem ? 1 : 0);
     displs[i] = (i == 0 ? 0 : displs[i - 1] + sendcounts[i - 1]);
@@ -91,8 +94,8 @@ bool ZyazevaSGrahamSchemeMPI::RunImpl() {
 
   int local_n = sendcounts[rank];
   std::vector<Point> local_points(local_n);
-  MPI_Scatterv(rank == 0 ? GetInput().data() : nullptr, sendcounts.data(), displs.data(), MPI_POINT,
-               local_points.data(), local_n, MPI_POINT, 0, MPI_COMM_WORLD);
+  MPI_Scatterv(rank == 0 ? GetInput().data() : nullptr, sendcounts.data(), displs.data(), mpi_point,
+               local_points.data(), local_n, mpi_point, 0, MPI_COMM_WORLD);
 
   if (local_points.size() >= 3) {
     BuildConvexHullInPlace(local_points);
@@ -111,15 +114,15 @@ bool ZyazevaSGrahamSchemeMPI::RunImpl() {
     }
   }
   std::vector<Point> gathered_hulls(total);
-  MPI_Gatherv(local_points.data(), local_size, MPI_POINT, gathered_hulls.data(), recv_sizes.data(), displs_hull.data(),
-              MPI_POINT, 0, MPI_COMM_WORLD);
+  MPI_Gatherv(local_points.data(), local_size, mpi_point, gathered_hulls.data(), recv_sizes.data(), displs_hull.data(),
+              mpi_point, 0, MPI_COMM_WORLD);
 
   if (rank == 0) {
     BuildConvexHullInPlace(gathered_hulls);
     GetOutput() = std::move(gathered_hulls);
   }
 
-  MPI_Type_free(&MPI_POINT);
+  MPI_Type_free(&mpi_point);
   return true;
 }
 

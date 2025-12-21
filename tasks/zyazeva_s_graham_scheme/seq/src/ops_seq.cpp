@@ -1,14 +1,15 @@
 #include "zyazeva_s_graham_scheme/seq/include/ops_seq.hpp"
 
 #include <algorithm>
+#include <cstddef>
 #include <vector>
 
 namespace zyazeva_s_graham_scheme {
 
 namespace {
 
-int Cross(const Point& O, const Point& A, const Point& B) {
-  return (A.x - O.x) * (B.y - O.y) - (A.y - O.y) * (B.x - O.x);
+int Cross(const Point& origin, const Point& a, const Point& b) {
+  return (a.x - origin.x) * (b.y - origin.y) - (a.y - origin.y) * (b.x - origin.x);
 }
 
 std::vector<Point> BuildConvexHull(std::vector<Point> pts) {
@@ -16,8 +17,8 @@ std::vector<Point> BuildConvexHull(std::vector<Point> pts) {
     return {};
   }
 
-  std::sort(pts.begin(), pts.end(),
-            [](const Point& a, const Point& b) { return a.x < b.x || (a.x == b.x && a.y < b.y); });
+  std::ranges::sort(pts.begin(), pts.end(),
+                    [](const Point& a, const Point& b) { return a.x < b.x || (a.x == b.x && a.y < b.y); });
 
   std::vector<Point> hull;
 

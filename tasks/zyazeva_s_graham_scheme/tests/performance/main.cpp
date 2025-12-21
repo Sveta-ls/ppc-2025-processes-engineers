@@ -1,9 +1,6 @@
 #include <gtest/gtest.h>
-#include <mpi.h>
 
-#include <chrono>
-#include <random>
-#include <vector>
+#include <cstddef>
 
 #include "util/include/perf_test_util.hpp"
 #include "zyazeva_s_graham_scheme/common/include/common.hpp"
@@ -14,15 +11,15 @@ namespace zyazeva_s_graham_scheme {
 
 class ZyazevaSGrahamSchemeLargePerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
  protected:
-  InType input_data_;
+  InType input_data;
 
   void SetUp() override {
     constexpr int kNumPoints = 50000000;
-    input_data_.resize(kNumPoints);
+    input_data.resize(kNumPoints);
 
     for (int i = 0; i < kNumPoints; ++i) {
-      input_data_[i].x = i % 5000;
-      input_data_[i].y = (i * 3) % 5000;
+      input_data[i].x = i % 5000;
+      input_data[i].y = (i * 3) % 5000;
     }
   }
 
@@ -31,8 +28,8 @@ class ZyazevaSGrahamSchemeLargePerfTest : public ppc::util::BaseRunPerfTests<InT
       return true;
     }
 
-    auto Cross = [](const Point& O, const Point& A, const Point& B) {
-      return (A.x - O.x) * (B.y - O.y) - (A.y - O.y) * (B.x - O.x);
+    auto cross = [](const Point& origin, const Point& a, const Point& b) {
+      return (a.x - origin.x) * (b.y - origin.y) - (a.y - origin.y) * (b.x - origin.x);
     };
 
     const size_t n = output_data.size();
@@ -40,7 +37,7 @@ class ZyazevaSGrahamSchemeLargePerfTest : public ppc::util::BaseRunPerfTests<InT
       const Point& a = output_data[i];
       const Point& b = output_data[(i + 1) % n];
       const Point& c = output_data[(i + 2) % n];
-      if (Cross(a, b, c) < 0) {
+      if (cross(a, b, c) < 0) {
         return false;
       }
     }
@@ -48,7 +45,7 @@ class ZyazevaSGrahamSchemeLargePerfTest : public ppc::util::BaseRunPerfTests<InT
   }
 
   InType GetTestInputData() final {
-    return input_data_;
+    return input_data;
   }
 };
 
