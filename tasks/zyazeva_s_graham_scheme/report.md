@@ -2,7 +2,7 @@
 
 - Student: <Зязева Светлана Александровна>, group <3823Б1ПР2>
 - Technology: <SEQ | MPI>
-- Variant: <17>
+- Variant: <24>
 
 ---
 
