@@ -12,7 +12,7 @@ class ZyazevaSGrahamSchemeMPI : public BaseTask {
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;
   }
-  explicit ZyazevaSGrahamSchemeMPI(const InType &in);
+  explicit ZyazevaSGrahamSchemeMPI(const InType &in);  // 4
 
  private:
   bool ValidationImpl() override;

@@ -13,16 +13,16 @@ namespace zyazeva_s_graham_scheme {
 
 namespace {
 
-int Cross(const Point& origin, const Point& a, const Point& b) {
+int Cross(const Point &origin, const Point &a, const Point &b) {
   return ((a.x - origin.x) * (b.y - origin.y)) - ((a.y - origin.y) * (b.x - origin.x));
 }
 
-void BuildConvexHullInPlace(std::vector<Point>& pts) {
+void BuildConvexHullInPlace(std::vector<Point> &pts) {
   std::ranges::sort(pts.begin(), pts.end(),
-                    [](const Point& a, const Point& b) { return a.x < b.x || (a.x == b.x && a.y < b.y); });
+                    [](const Point &a, const Point &b) { return a.x < b.x || (a.x == b.x && a.y < b.y); });
 
   std::vector<Point> hull;
-  for (auto& p : pts) {
+  for (auto &p : pts) {
     while (hull.size() >= 2 && Cross(hull[hull.size() - 2], hull.back(), p) <= 0) {
       hull.pop_back();
     }
@@ -30,7 +30,7 @@ void BuildConvexHullInPlace(std::vector<Point>& pts) {
   }
   size_t lower_size = hull.size();
   for (int i = static_cast<int>(pts.size()) - 2; i >= 0; --i) {
-    auto& p = pts[i];
+    auto &p = pts[i];
     while (hull.size() > lower_size && Cross(hull[hull.size() - 2], hull.back(), p) <= 0) {
       hull.pop_back();
     }
@@ -43,7 +43,7 @@ void BuildConvexHullInPlace(std::vector<Point>& pts) {
 
 }  // namespace
 
-ZyazevaSGrahamSchemeMPI::ZyazevaSGrahamSchemeMPI(const InType& in) {
+ZyazevaSGrahamSchemeMPI::ZyazevaSGrahamSchemeMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput().clear();
@@ -117,7 +117,7 @@ bool ZyazevaSGrahamSchemeMPI::RunImpl() {
               mpi_point, 0, MPI_COMM_WORLD);
 
   if (rank == 0) {
-    BuildConvexHullInPlace(gathered_hulls);
+    BuildConvexHullInPlace(gathered_hulls);  // 3
     GetOutput() = std::move(gathered_hulls);
   }
 

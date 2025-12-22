@@ -10,7 +10,7 @@ class ZyazevaSGrahamSchemeSEQ : public BaseTask {
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  explicit ZyazevaSGrahamSchemeSEQ(const InType &in);
+  explicit ZyazevaSGrahamSchemeSEQ(const InType &in);  // 2
 
  private:
   bool ValidationImpl() override;
