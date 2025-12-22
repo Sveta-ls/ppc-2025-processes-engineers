@@ -15,10 +15,6 @@ int Cross(const Point& origin, const Point& a, const Point& b) {
 }
 
 std::vector<Point> BuildConvexHull(std::vector<Point> pts) {
-  if (pts.size() < 3) {
-    return {};
-  }
-
   std::ranges::sort(pts.begin(), pts.end(),
                     [](const Point& a, const Point& b) { return a.x < b.x || (a.x == b.x && a.y < b.y); });
 

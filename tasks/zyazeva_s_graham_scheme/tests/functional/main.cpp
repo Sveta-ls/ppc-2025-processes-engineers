@@ -91,6 +91,18 @@ class ZyazevaGrahamRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, 
         input_ = {{0, 0}, {1, 1}};
         expected_ = {};
         break;
+      case 8:  // concave shape (forces pop_back)
+        input_ = {{0, 0}, {2, 1}, {4, 0}, {3, 2}, {4, 4}, {2, 3}, {0, 4}, {1, 2}};
+        expected_ = {{0, 0}, {4, 0}, {4, 4}, {0, 4}};
+        break;
+      case 9:  // all points equal
+        input_ = {{1, 1}, {1, 1}, {1, 1}, {1, 1}};
+        expected_ = {};
+        break;
+      default:
+        input_ = {{0, 2}};
+        expected_ = {};
+        break;
     }
   }
 
@@ -153,6 +165,14 @@ class ZyazevaGrahamRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, 
         input_ = {{0, 0}, {1, 1}};
         expected_ = {};
         break;
+      case 7:  // concave shape
+        input_ = {{0, 0}, {2, 1}, {4, 0}, {3, 2}, {4, 4}, {2, 3}, {0, 4}, {1, 2}};
+        expected_ = {{0, 0}, {4, 0}, {4, 4}, {0, 4}};
+        break;
+      default:
+        input_ = {{0, 2}};
+        expected_ = {};
+        break;
     }
   }
 
@@ -184,10 +204,10 @@ TEST_P(ZyazevaGrahamRunFuncTestsMPI, GrahamScanMPI) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 7> kTests = {std::make_tuple(0, "triangle"),  std::make_tuple(1, "square_with_inner"),
-                                        std::make_tuple(2, "collinear"), std::make_tuple(3, "pentagon"),
-                                        std::make_tuple(4, "min_valid"), std::make_tuple(5, "one_point"),
-                                        std::make_tuple(6, "two_points")};
+const std::array<TestType, 8> kTests = {std::make_tuple(0, "triangle"),   std::make_tuple(1, "square_with_inner"),
+                                        std::make_tuple(2, "collinear"),  std::make_tuple(3, "pentagon"),
+                                        std::make_tuple(4, "min_valid"),  std::make_tuple(5, "one_point"),
+                                        std::make_tuple(6, "two_points"), std::make_tuple(7, "concave")};
 
 const auto kSeqTasks =
     ppc::util::AddFuncTask<ZyazevaSGrahamSchemeSEQ, InType>(kTests, PPC_SETTINGS_zyazeva_s_graham_scheme);
