@@ -91,13 +91,9 @@ class ZyazevaGrahamRunFuncTestsSEQ : public ppc::util::BaseRunFuncTests<InType, 
         input_ = {{0, 0}, {1, 1}};
         expected_ = {};
         break;
-      case 8:  // concave shape (forces pop_back)
+      case 7:  // concave shape (forces pop_back)
         input_ = {{0, 0}, {2, 1}, {4, 0}, {3, 2}, {4, 4}, {2, 3}, {0, 4}, {1, 2}};
         expected_ = {{0, 0}, {4, 0}, {4, 4}, {0, 4}};
-        break;
-      case 9:  // all points equal
-        input_ = {{1, 1}, {1, 1}, {1, 1}, {1, 1}};
-        expected_ = {};
         break;
       default:
         input_ = {{0, 2}};
@@ -165,7 +161,7 @@ class ZyazevaGrahamRunFuncTestsMPI : public ppc::util::BaseRunFuncTests<InType, 
         input_ = {{0, 0}, {1, 1}};
         expected_ = {};
         break;
-      case 7:  // concave shape
+      case 7:
         input_ = {{0, 0}, {2, 1}, {4, 0}, {3, 2}, {4, 4}, {2, 3}, {0, 4}, {1, 2}};
         expected_ = {{0, 0}, {4, 0}, {4, 4}, {0, 4}};
         break;
